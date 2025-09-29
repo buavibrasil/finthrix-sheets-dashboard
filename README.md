@@ -1,4 +1,38 @@
-# Welcome to your Lovable project
+# 📊 FinThrix Dashboard - Google Sheets Integration
+
+Dashboard financeiro moderno com integração completa ao Google Sheets, sistema de monitoramento e debugging avançado.
+
+## 🚀 Deploy Automático
+
+Este projeto está configurado para **deploy automático** via GitHub + Vercel:
+
+- **Deploy instantâneo:** Commits na `main` = deploy automático
+- **Preview deploys:** Cada PR gera URL de preview
+- **Performance otimizada:** CDN global, cache inteligente
+- **HTTPS automático:** SSL/TLS configurado
+
+### 📖 Guias de Deploy
+
+- **[Deploy Automático (GitHub + Vercel)](./DEPLOY_AUTO.md)** - Recomendado
+- **[Deploy Local](./DEPLOY_LOCAL.md)** - Para desenvolvimento
+- **[Configuração Google](./GOOGLE_SETUP.md)** - OAuth e Sheets API
+
+## 🎯 Características Principais
+
+- **📈 Dashboard Financeiro:** Visualização de dados em tempo real
+- **🔗 Google Sheets:** Integração nativa com planilhas
+- **🔐 Autenticação OAuth:** Login seguro com Google
+- **📊 Monitoramento:** Sistema completo de debugging
+- **⚡ Performance:** Otimizado para produção
+- **🎨 UI Moderna:** Interface responsiva com Tailwind CSS
+
+## 🛠️ Tecnologias
+
+- **Frontend:** React + TypeScript + Vite
+- **Styling:** Tailwind CSS + shadcn/ui
+- **Backend:** Supabase
+- **Deploy:** Vercel + GitHub Actions
+- **Integração:** Google Sheets API + OAuth 2.0
 
 ## Project info
 
