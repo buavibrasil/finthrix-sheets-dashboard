@@ -5,6 +5,7 @@ import { ContasFaturas } from "@/components/financial/ContasFaturas";
 import { FluxoCaixa } from "@/components/financial/FluxoCaixa";
 import { ConfigStatus } from "@/components/auth/ConfigStatus";
 import { SystemMonitor } from "@/components/debug/SystemMonitor";
+import { GoogleSheetsDiagnostic } from "@/components/debug/GoogleSheetsDiagnostic";
 import { GoogleSheetsService } from "@/lib/google-sheets";
 import { useToast } from "@/hooks/use-toast";
 import { useLogger } from "@/utils/logger";
@@ -129,6 +130,14 @@ const Index = () => {
       
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ConfigStatus />
+        
+        {/* Componente de diagnóstico - apenas em desenvolvimento */}
+        {import.meta.env.DEV && (
+          <div className="mb-6">
+            <GoogleSheetsDiagnostic />
+          </div>
+        )}
+        
         {renderContent()}
       </main>
       

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { GoogleSheetsDirectService } from "./google-sheets-direct";
 
 export interface MovimentacaoData {
   data: string;
@@ -30,6 +31,7 @@ export class GoogleSheetsService {
     this.validateConfig();
     
     try {
+      // Tentar usar a Edge Function primeiro
       const { data, error } = await supabase.functions.invoke('google-sheets', {
         body: {
           access_token: accessToken,
@@ -53,8 +55,26 @@ export class GoogleSheetsService {
         mes: row[5] || ''
       }));
     } catch (error) {
-      console.error('Erro ao buscar movimentações:', error);
-      throw error;
+      console.warn('Edge Function falhou, tentando implementação direta:', error);
+      
+      try {
+        // Fallback: usar implementação direta
+        const data = await GoogleSheetsDirectService.fetchMovimentacoes(accessToken, this.SPREADSHEET_ID);
+        const rows = data.values || [];
+        if (rows.length <= 1) return [];
+
+        return rows.slice(1).map((row: string[]) => ({
+          data: row[0] || '',
+          transacao: row[1] || '',
+          categoria: row[2] || '',
+          entrada: parseFloat(row[3]) || 0,
+          saida: parseFloat(row[4]) || 0,
+          mes: row[5] || ''
+        }));
+      } catch (directError) {
+        console.error('Erro ao buscar movimentações (implementação direta):', directError);
+        throw directError;
+      }
     }
   }
 
@@ -62,6 +82,7 @@ export class GoogleSheetsService {
     this.validateConfig();
     
     try {
+      // Tentar usar a Edge Function primeiro
       const { data, error } = await supabase.functions.invoke('google-sheets', {
         body: {
           access_token: accessToken,
@@ -83,8 +104,24 @@ export class GoogleSheetsService {
         destinatario: row[3] || ''
       }));
     } catch (error) {
-      console.error('Erro ao buscar contas:', error);
-      throw error;
+      console.warn('Edge Function falhou, tentando implementação direta:', error);
+      
+      try {
+        // Fallback: usar implementação direta
+        const data = await GoogleSheetsDirectService.fetchContas(accessToken, this.SPREADSHEET_ID);
+        const rows = data.values || [];
+        if (rows.length <= 1) return [];
+
+        return rows.slice(1).map((row: string[]) => ({
+          dataFatura: row[0] || '',
+          numeroFatura: row[1] || '',
+          total: parseFloat(row[2]) || 0,
+          destinatario: row[3] || ''
+        }));
+      } catch (directError) {
+        console.error('Erro ao buscar contas (implementação direta):', directError);
+        throw directError;
+      }
     }
   }
 }
