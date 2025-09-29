@@ -33,12 +33,33 @@ Este documento descreve como configurar as integrações com Google Sheets e Goo
 4. Configure:
    - **Nome**: FinThrix Dashboard
    - **Origens JavaScript autorizadas**: 
-     - `http://localhost:8080`
      - `http://localhost:3000`
+     - `http://localhost:5173`
+     - `http://localhost:8080`
+     - `http://127.0.0.1:8080`
      - Adicione outros domínios conforme necessário
    - **URIs de redirecionamento autorizados**: (deixe vazio para aplicações SPA)
 5. Clique em "Criar"
 6. **Copie o Client ID** gerado
+
+### 1.4 Troubleshooting - Erro redirect_uri_mismatch
+
+Se você receber o erro **"Erro 400: redirect_uri_mismatch"**, siga estes passos:
+
+1. **Acesse:** https://console.cloud.google.com/
+2. **Vá para:** APIs e serviços > Credenciais
+3. **Encontre** seu OAuth 2.0 Client ID
+4. **Clique no ícone de edição** (lápis)
+5. **Na seção "Origens JavaScript autorizadas"**, certifique-se de que estão incluídas:
+   - `http://localhost:3000`
+   - `http://localhost:5173`
+   - `http://localhost:8080`
+   - `http://127.0.0.1:8080`
+6. **Clique em "Salvar"**
+7. **Aguarde** alguns segundos para propagação
+8. **Teste** novamente a autenticação
+
+**Nota:** O erro ocorre quando a URL atual (`http://localhost:8080`) não está listada nas origens autorizadas do Google OAuth.
 
 ## 2. Configuração da Planilha Google Sheets
 
