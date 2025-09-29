@@ -22,8 +22,7 @@ Este guia explica como configurar e usar o deploy automático via GitHub + Verce
 ### 2. Conectar Repositório Local ao GitHub
 
 ```bash
-# Adicionar remote origin
-git remote add origin https://github.com/SEU_USUARIO/finthrix-sheets-dashboard.git
+# Adicionar remote ferraroandre/finthrix-sheets-dashboard.git
 
 # Push inicial
 git branch -M main
