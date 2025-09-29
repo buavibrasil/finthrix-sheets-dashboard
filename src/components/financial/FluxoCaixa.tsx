@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -7,82 +7,73 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { TrendingUp, TrendingDown, Filter, Download, Search } from "lucide-react";
-
-// Dados simulados de movimentações
-const mockMovimentacoes = [
-  { data: "2024-01-05", transacao: "Freelance Web", categoria: "Renda Extra", entrada: 1500, saida: 0, mes: "Janeiro" },
-  { data: "2024-01-10", transacao: "Salário", categoria: "Renda", entrada: 5000, saida: 0, mes: "Janeiro" },
-  { data: "2024-01-15", transacao: "Aluguel", categoria: "Moradia", entrada: 0, saida: 1200, mes: "Janeiro" },
-  { data: "2024-01-18", transacao: "Supermercado Extra", categoria: "Alimentação", entrada: 0, saida: 400, mes: "Janeiro" },
-  { data: "2024-01-20", transacao: "Combustível", categoria: "Transporte", entrada: 0, saida: 250, mes: "Janeiro" },
-  { data: "2024-01-25", transacao: "Farmácia", categoria: "Saúde", entrada: 0, saida: 150, mes: "Janeiro" },
-  { data: "2024-02-05", transacao: "Consultoria", categoria: "Renda Extra", entrada: 2000, saida: 0, mes: "Fevereiro" },
-  { data: "2024-02-10", transacao: "Salário", categoria: "Renda", entrada: 5000, saida: 0, mes: "Fevereiro" },
-  { data: "2024-02-15", transacao: "Aluguel", categoria: "Moradia", entrada: 0, saida: 1200, mes: "Fevereiro" },
-  { data: "2024-02-18", transacao: "Supermercado", categoria: "Alimentação", entrada: 0, saida: 350, mes: "Fevereiro" },
-  { data: "2024-02-22", transacao: "Academia", categoria: "Lazer", entrada: 0, saida: 120, mes: "Fevereiro" },
-  { data: "2024-03-05", transacao: "Projeto App", categoria: "Renda Extra", entrada: 3000, saida: 0, mes: "Março" },
-  { data: "2024-03-10", transacao: "Salário", categoria: "Renda", entrada: 5200, saida: 0, mes: "Março" },
-  { data: "2024-03-15", transacao: "Aluguel", categoria: "Moradia", entrada: 0, saida: 1200, mes: "Março" },
-  { data: "2024-03-18", transacao: "Supermercado", categoria: "Alimentação", entrada: 0, saida: 380, mes: "Março" },
-  { data: "2024-03-20", transacao: "Internet", categoria: "Utilidades", entrada: 0, saida: 89, mes: "Março" },
-];
+import { useDebounce } from "@/hooks/useDebounce";
+import { useFilters, useComputedData, useFinancialActions } from "@/store/useFinancialStore";
+import { useInitializeStore } from "@/hooks/useInitializeStore";
 
 export const FluxoCaixa = () => {
-  const [selectedMonth, setSelectedMonth] = useState<string>("all");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [searchTerm, setSearchTerm] = useState("");
+  // Inicializar store com dados mock
+  useInitializeStore();
 
-  const availableMonths = Array.from(new Set(mockMovimentacoes.map(mov => mov.mes)));
-  const availableCategories = Array.from(new Set(mockMovimentacoes.map(mov => mov.categoria)));
+  // Usar hooks do store
+  const filters = useFilters();
+  const { filteredMovimentacoes, availableMonths, availableCategories } = useComputedData();
+  const { setFilters } = useFinancialActions();
 
-  // Filtrar movimentações
-  const filteredMovimentacoes = useMemo(() => {
-    return mockMovimentacoes.filter(mov => {
-      const monthMatch = selectedMonth === "all" || mov.mes === selectedMonth;
-      const categoryMatch = selectedCategory === "all" || mov.categoria === selectedCategory;
-      const searchMatch = searchTerm === "" || 
-        mov.transacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        mov.categoria.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      return monthMatch && categoryMatch && searchMatch;
-    });
-  }, [selectedMonth, selectedCategory, searchTerm]);
+  // Aplicar debounce no termo de busca para evitar filtros excessivos
+  const debouncedSearchTerm = useDebounce(filters.searchTerm, 300);
+
+  // Atualizar filtros quando o debounced search term mudar
+  useEffect(() => {
+    if (debouncedSearchTerm !== filters.searchTerm) {
+      setFilters({ searchTerm: debouncedSearchTerm });
+    }
+  }, [debouncedSearchTerm, filters.searchTerm, setFilters]);
 
   // Dados para o gráfico de área
   const chartData = useMemo(() => {
-    const groupedByDate = mockMovimentacoes.reduce((acc, mov) => {
+    const dataMap = new Map();
+    
+    filteredMovimentacoes.forEach(mov => {
       const date = mov.data;
-      if (!acc[date]) {
-        acc[date] = { data: date, entradas: 0, saidas: 0, saldo: 0 };
+      if (!dataMap.has(date)) {
+        dataMap.set(date, { data: date, entradas: 0, saidas: 0, saldo: 0 });
       }
-      acc[date].entradas += mov.entrada;
-      acc[date].saidas += mov.saida;
-      return acc;
-    }, {} as Record<string, { data: string; entradas: number; saidas: number; saldo: number }>);
-
+      
+      const entry = dataMap.get(date);
+      entry.entradas += mov.entrada;
+      entry.saidas += mov.saida;
+    });
+    
     // Calcular saldo acumulado
+    const sortedData = Array.from(dataMap.values()).sort((a, b) => 
+      new Date(a.data).getTime() - new Date(b.data).getTime()
+    );
+    
     let saldoAcumulado = 0;
-    return Object.values(groupedByDate)
-      .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())
-      .map(item => {
-        saldoAcumulado += (item.entradas - item.saidas);
-        return {
-          ...item,
-          saldo: saldoAcumulado,
-          dataFormatada: new Date(item.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
-        };
-      });
-  }, []);
+    return sortedData.map(item => {
+      saldoAcumulado += item.entradas - item.saidas;
+      return {
+        ...item,
+        saldo: saldoAcumulado,
+        dataFormatada: new Date(item.data).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
+      };
+    });
+  }, [filteredMovimentacoes]);
 
-  const totalEntradas = filteredMovimentacoes.reduce((sum, mov) => sum + mov.entrada, 0);
-  const totalSaidas = filteredMovimentacoes.reduce((sum, mov) => sum + mov.saida, 0);
-  const saldoTotal = totalEntradas - totalSaidas;
+  // Calcular totais
+  const totals = useMemo(() => {
+    const totalEntradas = filteredMovimentacoes.reduce((sum, mov) => sum + mov.entrada, 0);
+    const totalSaidas = filteredMovimentacoes.reduce((sum, mov) => sum + mov.saida, 0);
+    const saldoTotal = totalEntradas - totalSaidas;
+    
+    return { totalEntradas, totalSaidas, saldoTotal };
+  }, [filteredMovimentacoes]);
+
+  const { totalEntradas, totalSaidas, saldoTotal } = totals;
 
   const clearFilters = () => {
-    setSelectedMonth("all");
-    setSelectedCategory("all");
-    setSearchTerm("");
+    setFilters({ month: "all", category: "all", searchTerm: "" });
   };
 
   return (
@@ -106,13 +97,13 @@ export const FluxoCaixa = () => {
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar transação..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={filters.searchTerm}
+                onChange={(e) => setFilters({ searchTerm: e.target.value })}
                 className="pl-10"
               />
             </div>
             
-            <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <Select value={filters.month} onValueChange={(value) => setFilters({ month: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Mês" />
               </SelectTrigger>
@@ -124,7 +115,7 @@ export const FluxoCaixa = () => {
               </SelectContent>
             </Select>
 
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <Select value={filters.category} onValueChange={(value) => setFilters({ category: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Categoria" />
               </SelectTrigger>

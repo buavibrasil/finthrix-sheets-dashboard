@@ -14,7 +14,11 @@ Este guia explica como configurar e usar o deploy automático via GitHub + Verce
 ### 1. Criar Repositório no GitHub
 
 1. **Acesse:** https://github.com/new
-2. **Nome:** `finthrix-sheets-dashboard` (ou nome de sua escolha)
+2. **Nome:** `VITE_SUPABASE_PROJECT_ID=seu-projeto-id
+VITE_SUPABASE_ANON_KEY=sua-chave-publica
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_GOOGLE_CLIENT_ID=seu-client-id.apps.googleusercontent.com
+VITE_GOOGLE_SPREADSHEET_ID=id-da-sua-planilha` (ou nome de sua escolha)
 3. **Visibilidade:** Public ou Private
 4. **NÃO** inicialize com README (já temos um)
 5. **Clique em:** "Create repository"

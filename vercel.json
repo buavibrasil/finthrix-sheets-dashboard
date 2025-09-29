@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "name": "finthrix-sheets-dashboard",
   "builds": [
     {
       "src": "package.json",
@@ -10,34 +9,12 @@
       }
     }
   ],
-  "routes": [
+  "rewrites": [
     {
-      "src": "/assets/(.*)",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot))",
-      "headers": {
-        "cache-control": "public, max-age=31536000"
-      }
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html",
-      "headers": {
-        "cache-control": "public, max-age=0, must-revalidate"
-      }
+      "source": "/((?!api/).*)",
+      "destination": "/index.html"
     }
   ],
-  "env": {
-    "VITE_SUPABASE_PROJECT_ID": "@vite_supabase_project_id",
-    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
-    "VITE_SUPABASE_URL": "@vite_supabase_url",
-    "VITE_GOOGLE_CLIENT_ID": "@vite_google_client_id",
-    "VITE_GOOGLE_SPREADSHEET_ID": "@vite_google_spreadsheet_id"
-  },
   "headers": [
     {
       "source": "/(.*)",
@@ -61,11 +38,6 @@
       ]
     }
   ],
-  "functions": {
-    "app/api/**/*.js": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "github": {
     "autoAlias": true,
     "autoJobCancelation": true

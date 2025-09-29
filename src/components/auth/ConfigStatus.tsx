@@ -32,8 +32,8 @@ export const ConfigStatus = () => {
     },
     {
       name: "Supabase Key",
-      value: import.meta.env.VITE_SUPABASE_ANON_KEY ? "Configurada" : undefined,
-      isValid: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+      value: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ? "Configurada" : undefined,
+      isValid: !!import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
       description: "Chave pública do Supabase"
     }
   ];
