@@ -7,6 +7,7 @@ import { ConfigStatus } from "@/components/auth/ConfigStatus";
 import { SystemMonitor } from "@/components/debug/SystemMonitor";
 import { GoogleSheetsDiagnostic } from "@/components/debug/GoogleSheetsDiagnostic";
 import { GoogleSheetsService } from "@/lib/google-sheets";
+import { useDataSync } from "@/hooks/useInitializeStore";
 import { useToast } from "@/hooks/use-toast";
 import { useLogger } from "@/utils/logger";
 
@@ -16,6 +17,7 @@ const Index = () => {
   const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(null);
   const { toast } = useToast();
   const logger = useLogger();
+  const { syncData, isLoading, error, lastSync } = useDataSync();
   
   // Usuário simulado - em produção viria da autenticação Google
   const user = {
@@ -51,21 +53,19 @@ const Index = () => {
         description: "Verificando acesso aos dados da planilha...",
       });
 
-      // Testar conexão carregando dados
-      const movimentacoes = await logger.measureTime("API", "Busca de movimentações", async () => {
-        return await GoogleSheetsService.fetchMovimentacoes(accessToken);
+      // Sincronizar dados usando o hook useDataSync
+      await logger.measureTime("API", "Sincronização de dados", async () => {
+        await syncData(accessToken);
       });
       
-      logger.api("Dados carregados com sucesso", { 
-        movimentacoesCount: movimentacoes?.length || 0 
-      });
+      logger.api("Dados sincronizados com sucesso");
       
       toast({
         title: "Conexão bem-sucedida!",
-        description: "Dados do Google Sheets carregados com sucesso.",
+        description: "Dados do Google Sheets carregados e sincronizados com sucesso.",
       });
       
-      logger.info("API", "Validação de conexão concluída com sucesso");
+      logger.info("API", "Sincronização de dados concluída com sucesso");
       
     } catch (error) {
       logger.error("API", "Erro durante validação de conexão", error);
