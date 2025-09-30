@@ -65,26 +65,57 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null;
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
-    return color ? `  --color-${key}: ${color};` : null;
-  })
-  .join("\n")}
-}
-`,
-          )
-          .join("\n"),
-      }}
-    />
-  );
+  // Implementação segura usando CSS-in-JS ao invés de dangerouslySetInnerHTML
+  React.useEffect(() => {
+    const styleId = `chart-style-${id}`;
+    let existingStyle = document.getElementById(styleId);
+    
+    if (!existingStyle) {
+      existingStyle = document.createElement('style');
+      existingStyle.id = styleId;
+      document.head.appendChild(existingStyle);
+    }
+
+    // Sanitizar e validar dados antes de criar CSS
+    const sanitizedCSS = Object.entries(THEMES)
+      .map(([theme, prefix]) => {
+        // Validar prefix para prevenir injeção CSS
+        const safePrefix = prefix.replace(/[^a-zA-Z0-9\-_\s\[\]\.#:]/g, '');
+        // Validar ID para prevenir injeção CSS
+        const safeId = id.replace(/[^a-zA-Z0-9\-_]/g, '');
+        
+        const colorRules = colorConfig
+          .map(([key, itemConfig]) => {
+            // Sanitizar key
+            const safeKey = key.replace(/[^a-zA-Z0-9\-_]/g, '');
+            const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+            
+            // Validar cor CSS
+            if (color && /^#[0-9A-Fa-f]{6}$|^#[0-9A-Fa-f]{3}$|^rgb\(|^rgba\(|^hsl\(|^hsla\(/.test(color)) {
+              return `  --color-${safeKey}: ${color};`;
+            }
+            return null;
+          })
+          .filter(Boolean)
+          .join('\n');
+
+        return colorRules ? `${safePrefix} [data-chart="${safeId}"] {\n${colorRules}\n}` : '';
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    existingStyle.textContent = sanitizedCSS;
+
+    // Cleanup na desmontagem
+    return () => {
+      const style = document.getElementById(styleId);
+      if (style) {
+        style.remove();
+      }
+    };
+  }, [id, config]);
+
+  return null; // Não renderiza nada, apenas injeta CSS de forma segura
 };
 
 const ChartTooltip = RechartsPrimitive.Tooltip;

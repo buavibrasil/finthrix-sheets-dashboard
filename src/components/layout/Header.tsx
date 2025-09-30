@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GoogleConnect } from "@/components/auth/GoogleConnect";
+import { useInternalLogger } from "@/utils/internal-logger";
 
 interface HeaderProps {
   activeSection: string;
@@ -19,12 +20,41 @@ interface HeaderProps {
 }
 
 export const Header = ({ activeSection, onSectionChange, user, onGoogleConnected, isGoogleConnected }: HeaderProps) => {
+  // LOGS INTERNOS: Facilita debugging e entendimento do comportamento
+  const logger = useInternalLogger('Header');
+  
   const menuItems = [
     { id: "resumo", label: "Resumo Financeiro", icon: TrendingUp },
     { id: "contas", label: "Contas/Faturas", icon: FileText },
     { id: "fluxo", label: "Fluxo de Caixa", icon: BarChart3 },
     { id: "limpar", label: "Limpar Dados", icon: Trash2 },
   ];
+
+  // LOG: Mudanças de seção ativa para análise de navegação
+  const handleSectionChange = (sectionId: string) => {
+    logger.userAction(`Navigation: ${activeSection} → ${sectionId}`, {
+      metadata: {
+        previousSection: activeSection,
+        newSection: sectionId,
+        userAuthenticated: !!user,
+        googleConnected: isGoogleConnected
+      }
+    });
+    
+    onSectionChange(sectionId);
+  };
+
+  // LOG: Conexão com Google para auditoria
+  const handleGoogleConnected = (accessToken: string) => {
+    logger.info('Google authentication successful', {
+      metadata: {
+        tokenLength: accessToken.length,
+        userEmail: user?.email || 'unknown'
+      }
+    });
+    
+    onGoogleConnected(accessToken);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full bg-gradient-primary border-b shadow-card">
@@ -48,7 +78,7 @@ export const Header = ({ activeSection, onSectionChange, user, onGoogleConnected
                     key={item.id}
                     variant={activeSection === item.id ? "secondary" : "ghost"}
                     size="sm"
-                    onClick={() => onSectionChange(item.id)}
+                    onClick={() => handleSectionChange(item.id)}
                     className={`text-white hover:bg-white/20 ${
                       activeSection === item.id 
                         ? "bg-white/20 text-white" 
@@ -65,7 +95,7 @@ export const Header = ({ activeSection, onSectionChange, user, onGoogleConnected
 
           <div className="flex items-center space-x-4">
             <GoogleConnect 
-              onConnected={onGoogleConnected}
+              onConnected={handleGoogleConnected}
               isConnected={isGoogleConnected}
             />
             
