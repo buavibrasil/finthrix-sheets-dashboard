@@ -35,12 +35,14 @@
 **IMPORTANTE:** Configure estas variáveis na Vercel:
 
 ```env
-VITE_SUPABASE_PROJECT_ID=iiczfcfxgvuqvhqohnue
-VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlpY3pmY2Z4Z3Z1cXZocW9obnVlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkxNTk2MzMsImV4cCI6MjA3NDczNTYzM30.VnWWXur1M6FGcvEdIHj-6FzUZZt33bp7MPZu1R9rz1U
-VITE_SUPABASE_URL=https://iiczfcfxgvuqvhqohnue.supabase.co
-VITE_GOOGLE_CLIENT_ID=413802157-g31n250c8tqmg72rq5kr52l3knss1se9.apps.googleusercontent.com
-VITE_GOOGLE_SPREADSHEET_ID=1TlJA8hQgYl8SW6muRjvOxEAQgPyW-3XSsGJiY16u6TA
+VITE_SUPABASE_PROJECT_ID=your_supabase_project_id
+VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
+VITE_SUPABASE_URL=https://your_project_id.supabase.co
+VITE_GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
+VITE_GOOGLE_SPREADSHEET_ID=your_google_spreadsheet_id
 ```
+
+> ⚠️ **SEGURANÇA:** Nunca commite chaves reais no repositório. Use sempre placeholders na documentação.
 
 ### 4. Deploy
 
