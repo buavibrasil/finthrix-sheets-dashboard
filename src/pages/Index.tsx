@@ -10,6 +10,7 @@ import { GoogleSheetsService } from "@/lib/google-sheets";
 import { useDataSync } from "@/hooks/useInitializeStore";
 import { useToast } from "@/hooks/use-toast";
 import { useLogger } from "@/utils/logger";
+import { DataCleaner } from "@/components/admin/DataCleaner";
 
 const Index = () => {
   const [activeSection, setActiveSection] = useState("resumo");
@@ -113,6 +114,8 @@ const Index = () => {
         return <ContasFaturas />;
       case "fluxo":
         return <FluxoCaixa />;
+      case "limpar":
+        return <DataCleaner />;
       default:
         return <ResumoFinanceiro />;
     }

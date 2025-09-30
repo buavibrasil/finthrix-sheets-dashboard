@@ -7,18 +7,15 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { FileText, Download, Filter } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-// Dados simulados das faturas
-const mockFaturas = [
-  { dataFatura: "2024-01-15", numeroFatura: "FAT001", total: 1200.50, destinatario: "Energia Elétrica CEMIG", status: "Pago", mes: "Janeiro" },
-  { dataFatura: "2024-01-20", numeroFatura: "FAT002", total: 890.30, destinatario: "Água e Esgoto COPASA", status: "Pago", mes: "Janeiro" },
-  { dataFatura: "2024-01-25", numeroFatura: "FAT003", total: 2150.00, destinatario: "Aluguel Imóvel", status: "Pago", mes: "Janeiro" },
-  { dataFatura: "2024-02-15", numeroFatura: "FAT004", total: 1150.75, destinatario: "Energia Elétrica CEMIG", status: "Pago", mes: "Fevereiro" },
-  { dataFatura: "2024-02-20", numeroFatura: "FAT005", total: 820.40, destinatario: "Água e Esgoto COPASA", status: "Pago", mes: "Fevereiro" },
-  { dataFatura: "2024-02-25", numeroFatura: "FAT006", total: 2150.00, destinatario: "Aluguel Imóvel", status: "Pago", mes: "Fevereiro" },
-  { dataFatura: "2024-03-15", numeroFatura: "FAT007", total: 1320.90, destinatario: "Energia Elétrica CEMIG", status: "Pendente", mes: "Março" },
-  { dataFatura: "2024-03-20", numeroFatura: "FAT008", total: 765.80, destinatario: "Água e Esgoto COPASA", status: "Vencido", mes: "Março" },
-  { dataFatura: "2024-03-25", numeroFatura: "FAT009", total: 2150.00, destinatario: "Aluguel Imóvel", status: "Pago", mes: "Março" },
-];
+// Dados simulados das faturas - LIMPOS
+const mockFaturas: Array<{
+  dataFatura: string;
+  numeroFatura: string;
+  total: number;
+  destinatario: string;
+  status: string;
+  mes: string;
+}> = [];
 
 export const ContasFaturas = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");

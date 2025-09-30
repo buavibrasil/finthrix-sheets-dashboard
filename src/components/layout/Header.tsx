@@ -1,4 +1,4 @@
-import { TrendingUp, FileText, BarChart3, Settings, LogOut } from "lucide-react";
+import { TrendingUp, FileText, BarChart3, Settings, LogOut, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -23,6 +23,7 @@ export const Header = ({ activeSection, onSectionChange, user, onGoogleConnected
     { id: "resumo", label: "Resumo Financeiro", icon: TrendingUp },
     { id: "contas", label: "Contas/Faturas", icon: FileText },
     { id: "fluxo", label: "Fluxo de Caixa", icon: BarChart3 },
+    { id: "limpar", label: "Limpar Dados", icon: Trash2 },
   ];
 
   return (

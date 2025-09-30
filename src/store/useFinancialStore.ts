@@ -65,6 +65,9 @@ export interface FinancialState {
   setFilters: (filters: Partial<FilterState>) => void;
   resetFilters: () => void;
   
+  // Limpeza de dados
+  clearAllData: () => void;
+  
   // Métricas
   calculateMetrics: () => void;
   
@@ -163,6 +166,13 @@ export const useFinancialStore = create<FinancialState>()(
           set((state) => ({
             ...state,
             filters: { ...initialState.filters },
+          })),
+          
+        // Limpeza de dados
+        clearAllData: () =>
+          set(() => ({
+            ...initialState,
+            lastSync: null,
           })),
           
         // Cálculo de métricas
@@ -308,6 +318,7 @@ export const useFinancialActions = () => {
     removeMovimentacao: store.removeMovimentacao,
     setFilters: store.setFilters,
     resetFilters: store.resetFilters,
+    clearAllData: store.clearAllData,
     calculateMetrics: store.calculateMetrics,
     setLoading: store.setLoading,
     setError: store.setError,

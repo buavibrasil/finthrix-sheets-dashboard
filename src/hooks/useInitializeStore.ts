@@ -1,25 +1,16 @@
 import { useEffect } from 'react';
 import { useFinancialStore } from '@/store/useFinancialStore';
 
-// Dados mock para inicializar o store
-const mockMovimentacoes = [
-  { id: '1', data: "2024-01-15", transacao: "Salário", categoria: "Renda", entrada: 5000, saida: 0, mes: "Janeiro" },
-  { id: '2', data: "2024-01-20", transacao: "Aluguel", categoria: "Moradia", entrada: 0, saida: 1200, mes: "Janeiro" },
-  { id: '3', data: "2024-01-25", transacao: "Supermercado", categoria: "Alimentação", entrada: 0, saida: 800, mes: "Janeiro" },
-  { id: '4', data: "2024-01-30", transacao: "Transporte", categoria: "Transporte", entrada: 0, saida: 300, mes: "Janeiro" },
-  { id: '5', data: "2024-02-15", transacao: "Salário", categoria: "Renda", entrada: 5000, saida: 0, mes: "Fevereiro" },
-  { id: '6', data: "2024-02-20", transacao: "Aluguel", categoria: "Moradia", entrada: 0, saida: 1200, mes: "Fevereiro" },
-  { id: '7', data: "2024-02-25", transacao: "Supermercado", categoria: "Alimentação", entrada: 0, saida: 600, mes: "Fevereiro" },
-  { id: '8', data: "2024-02-28", transacao: "Freelance", categoria: "Renda", entrada: 1500, saida: 0, mes: "Fevereiro" },
-  { id: '9', data: "2024-03-15", transacao: "Salário", categoria: "Renda", entrada: 5200, saida: 0, mes: "Março" },
-  { id: '10', data: "2024-03-20", transacao: "Aluguel", categoria: "Moradia", entrada: 0, saida: 1200, mes: "Março" },
-  { id: '11', data: "2024-03-25", transacao: "Supermercado", categoria: "Alimentação", entrada: 0, saida: 750, mes: "Março" },
-  { id: '12', data: "2024-03-28", transacao: "Academia", categoria: "Saúde", entrada: 0, saida: 150, mes: "Março" },
-  { id: '13', data: "2024-04-15", transacao: "Salário", categoria: "Renda", entrada: 5200, saida: 0, mes: "Abril" },
-  { id: '14', data: "2024-04-20", transacao: "Aluguel", categoria: "Moradia", entrada: 0, saida: 1200, mes: "Abril" },
-  { id: '15', data: "2024-04-25", transacao: "Supermercado", categoria: "Alimentação", entrada: 0, saida: 680, mes: "Abril" },
-  { id: '16', data: "2024-04-30", transacao: "Investimento", categoria: "Investimentos", entrada: 0, saida: 1000, mes: "Abril" },
-];
+// Dados mock para inicializar o store - LIMPOS
+const mockMovimentacoes: Array<{
+  id: string;
+  data: string;
+  transacao: string;
+  categoria: string;
+  entrada: number;
+  saida: number;
+  mes: string;
+}> = [];
 
 /**
  * Hook para inicializar o store com dados mock
