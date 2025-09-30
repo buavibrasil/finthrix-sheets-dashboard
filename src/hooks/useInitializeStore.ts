@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useFinancialStore } from '@/store/useFinancialStore';
 
-// Dados mock para inicializar o store - LIMPOS
+// Dados mock para inicializar o store - DADOS DE DEMONSTRAÇÃO
+// Estes dados serão substituídos pelos dados reais do Google Sheets após autenticação
 const mockMovimentacoes: Array<{
   id: string;
   data: string;
@@ -10,7 +11,116 @@ const mockMovimentacoes: Array<{
   entrada: number;
   saida: number;
   mes: string;
-}> = [];
+}> = [
+  {
+    id: "demo-1",
+    data: "01/01/2024",
+    transacao: "Salário",
+    categoria: "Receita",
+    entrada: 5000,
+    saida: 0,
+    mes: "2024-01"
+  },
+  {
+    id: "demo-2",
+    data: "02/01/2024",
+    transacao: "Supermercado",
+    categoria: "Alimentação",
+    entrada: 0,
+    saida: 350,
+    mes: "2024-01"
+  },
+  {
+    id: "demo-3",
+    data: "03/01/2024",
+    transacao: "Combustível",
+    categoria: "Transporte",
+    entrada: 0,
+    saida: 200,
+    mes: "2024-01"
+  },
+  {
+    id: "demo-4",
+    data: "05/01/2024",
+    transacao: "Freelance",
+    categoria: "Receita",
+    entrada: 1500,
+    saida: 0,
+    mes: "2024-01"
+  },
+  {
+    id: "demo-5",
+    data: "08/01/2024",
+    transacao: "Conta de Luz",
+    categoria: "Utilidades",
+    entrada: 0,
+    saida: 120,
+    mes: "2024-01"
+  },
+  {
+    id: "demo-6",
+    data: "10/01/2024",
+    transacao: "Internet",
+    categoria: "Utilidades",
+    entrada: 0,
+    saida: 80,
+    mes: "2024-01"
+  },
+  {
+    id: "demo-7",
+    data: "15/01/2024",
+    transacao: "Restaurante",
+    categoria: "Alimentação",
+    entrada: 0,
+    saida: 85,
+    mes: "2024-01"
+  },
+  {
+    id: "demo-8",
+    data: "20/01/2024",
+    transacao: "Farmácia",
+    categoria: "Saúde",
+    entrada: 0,
+    saida: 45,
+    mes: "2024-01"
+  },
+  {
+    id: "demo-9",
+    data: "01/02/2024",
+    transacao: "Salário",
+    categoria: "Receita",
+    entrada: 5000,
+    saida: 0,
+    mes: "2024-02"
+  },
+  {
+    id: "demo-10",
+    data: "03/02/2024",
+    transacao: "Supermercado",
+    categoria: "Alimentação",
+    entrada: 0,
+    saida: 400,
+    mes: "2024-02"
+  },
+  {
+    id: "demo-11",
+    data: "05/02/2024",
+    transacao: "Combustível",
+    categoria: "Transporte",
+    entrada: 0,
+    saida: 180,
+    mes: "2024-02"
+  },
+  {
+    id: "demo-12",
+    data: "12/02/2024",
+    transacao: "Consultoria",
+    categoria: "Receita",
+    entrada: 2000,
+    saida: 0,
+    mes: "2024-02"
+  }
+];
 
 /**
  * Hook para inicializar o store com dados mock
