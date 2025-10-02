@@ -1,0 +1,71 @@
+<svg width="640" height="1136" viewBox="0 0 640 1136" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="640" height="1136" fill="url(#splashGradient)" />
+  
+  <!-- Main Logo -->
+  <g transform="translate(220, 400)">
+    <!-- Logo Background Circle -->
+    <circle cx="100" cy="100" r="80" fill="white" opacity="0.15" />
+    <circle cx="100" cy="100" r="60" fill="white" opacity="0.1" />
+    
+    <!-- Chart Icon -->
+    <g transform="translate(50, 50)">
+      <!-- Chart Bars -->
+      <rect x="20" y="70" width="12" height="30" rx="2" fill="white" opacity="0.9" />
+      <rect x="40" y="55" width="12" height="45" rx="2" fill="white" opacity="0.9" />
+      <rect x="60" y="40" width="12" height="60" rx="2" fill="white" opacity="0.9" />
+      <rect x="80" y="25" width="12" height="75" rx="2" fill="white" opacity="0.9" />
+      
+      <!-- Trend Line -->
+      <path d="M20 78 L40 63 L60 48 L80 33 L108 15" 
+            stroke="white" 
+            stroke-width="3" 
+            stroke-linecap="round" 
+            stroke-linejoin="round" 
+            fill="none" 
+            opacity="0.8" />
+      
+      <!-- Data Points -->
+      <circle cx="20" cy="78" r="4" fill="white" />
+      <circle cx="40" cy="63" r="4" fill="white" />
+      <circle cx="60" cy="48" r="4" fill="white" />
+      <circle cx="80" cy="33" r="4" fill="white" />
+      <circle cx="108" cy="15" r="4" fill="white" />
+      
+      <!-- Currency Symbol -->
+      <text x="10" y="20" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="white" opacity="0.8">$</text>
+    </g>
+  </g>
+  
+  <!-- App Name -->
+  <text x="320" y="650" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="36" font-weight="700" fill="white">
+    Finthrix
+  </text>
+  
+  <!-- Tagline -->
+  <text x="320" y="690" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="400" fill="white" opacity="0.8">
+    Dashboard Financeiro Inteligente
+  </text>
+  
+  <!-- Loading Animation -->
+  <g transform="translate(290, 750)">
+    <circle cx="30" cy="30" r="20" stroke="white" stroke-width="3" fill="none" opacity="0.3" />
+    <circle cx="30" cy="30" r="20" stroke="white" stroke-width="3" fill="none" 
+            stroke-dasharray="31.416" stroke-dashoffset="31.416" opacity="0.8">
+      <animate attributeName="stroke-dashoffset" 
+               values="31.416;0;31.416" 
+               dur="2s" 
+               repeatCount="indefinite" />
+    </circle>
+  </g>
+  
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient id="splashGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e40af;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#1d4ed8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e3a8a;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>

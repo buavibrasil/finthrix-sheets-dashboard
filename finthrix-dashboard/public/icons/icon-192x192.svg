@@ -1,0 +1,41 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="96" cy="96" r="96" fill="url(#gradient)" />
+  
+  <!-- Main Icon - Financial Chart -->
+  <g transform="translate(48, 48)">
+    <!-- Chart Bars -->
+    <rect x="15" y="67" width="12" height="29" rx="2" fill="white" opacity="0.9" />
+    <rect x="33" y="52" width="12" height="44" rx="2" fill="white" opacity="0.9" />
+    <rect x="51" y="37" width="12" height="59" rx="2" fill="white" opacity="0.9" />
+    <rect x="69" y="22" width="12" height="74" rx="2" fill="white" opacity="0.9" />
+    
+    <!-- Trend Line -->
+    <path d="M15 75 L33 60 L51 45 L69 30 L87 15" 
+          stroke="white" 
+          stroke-width="2" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" 
+          fill="none" 
+          opacity="0.8" />
+    
+    <!-- Data Points -->
+    <circle cx="15" cy="75" r="3" fill="white" />
+    <circle cx="33" cy="60" r="3" fill="white" />
+    <circle cx="51" cy="45" r="3" fill="white" />
+    <circle cx="69" cy="30" r="3" fill="white" />
+    <circle cx="87" cy="15" r="3" fill="white" />
+    
+    <!-- Currency Symbol -->
+    <text x="8" y="15" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white" opacity="0.8">$</text>
+  </g>
+  
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#1d4ed8;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e40af;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>
