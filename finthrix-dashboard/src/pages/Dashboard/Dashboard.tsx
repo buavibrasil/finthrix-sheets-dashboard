@@ -1,24 +1,35 @@
-import { memo, useMemo } from 'react';
-import { useDashboardStore } from '@/stores/dashboardStore';
-import { useAuthStore } from '@/stores/authStore';
-import { LazyLineChart, LazyPieChart, LazyBarChart, LazyAreaChart, LazyChart } from '@/components/charts';
-import { Header } from '@/components/Layout';
-import { ExportButton } from '@/components/Export';
-import EmailVerificationBanner from '@/components/Auth/EmailVerificationBanner';
-import { 
-  mockLineChartData, 
-  mockPieChartData, 
-  mockBarChartData,
-  mockAreaChartData,
-  mockHorizontalBarChartData,
-  mockKPIs,
-  mockTransactions,
-  mockAccountsPayable 
-} from '@/utils/mockData';
+import { memo, Suspense, lazy } from 'react'
+import { useDashboardStore } from '@/stores/dashboardStore'
+import { useAuthStore } from '@/stores/authStore'
+import { useDashboard } from '@/hooks/useDashboard'
+import { LazyLineChart, LazyPieChart, LazyBarChart, LazyAreaChart, LazyChart } from '@/components/charts'
+import { Header } from '@/components/Layout'
+import { ExportButton } from '@/components/Export'
+import EmailVerificationBanner from '@/components/Auth/EmailVerificationBanner'
 
 const DashboardComponent = () => {
   const { filters, setFilters } = useDashboardStore();
   const { user } = useAuthStore();
+  
+  // Buscar dados reais usando o hook useDashboard
+  const {
+    kpis,
+    transactions,
+    accountsPayable,
+    lineChartData,
+    pieChartData,
+    isKPIsLoading,
+    isTransactionsLoading,
+    isAccountsPayableLoading,
+    isLineChartLoading,
+    isPieChartLoading,
+    kpisError,
+    transactionsError,
+    accountsPayableError,
+    lineChartError,
+    pieChartError,
+    refreshDashboard
+  } = useDashboard()
 
   // Memoizar handlers para evitar recriação desnecessária
   const handlePeriodChange = useMemo(() => (period: 'today' | 'week' | 'month' | 'quarter' | 'year' | 'custom') => {
@@ -41,19 +52,16 @@ const DashboardComponent = () => {
 
   // Memoizar dados para exportação
   const exportData = useMemo(() => ({
-    kpis: mockKPIs,
-    transactions: mockTransactions,
-    accountsPayable: mockAccountsPayable,
+    kpis: kpis?.[0] || {},
+    transactions: transactions || [],
+    accountsPayable: accountsPayable || [],
     period: filters.period || 'month',
     generatedAt: new Date().toISOString(),
     charts: {
-      lineChart: mockLineChartData,
-      pieChart: mockPieChartData,
-      barChart: mockBarChartData,
-      areaChart: mockAreaChartData,
-      horizontalBarChart: mockHorizontalBarChartData
+      lineChart: lineChartData || {},
+      pieChart: pieChartData || {}
     }
-  }), []);
+  }), [kpis, transactions, accountsPayable, lineChartData, pieChartData, filters.period]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -165,7 +173,13 @@ const DashboardComponent = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Saldo Atual</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  R$ {mockKPIs.currentBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {isKPIsLoading ? (
+                    <span className="animate-pulse bg-gray-200 h-8 w-24 rounded"></span>
+                  ) : kpisError ? (
+                    <span className="text-red-500">Erro</span>
+                  ) : (
+                    `R$ ${(kpis?.[0]?.currentBalance || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                  )}
                 </p>
               </div>
               <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -179,7 +193,13 @@ const DashboardComponent = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Receitas</p>
                 <p className="text-2xl font-bold text-green-600">
-                  R$ {mockKPIs.totalIncome.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {isKPIsLoading ? (
+                    <span className="animate-pulse bg-gray-200 h-8 w-24 rounded"></span>
+                  ) : kpisError ? (
+                    <span className="text-red-500">Erro</span>
+                  ) : (
+                    `R$ ${(kpis?.[0]?.totalIncome || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                  )}
                 </p>
               </div>
               <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -193,7 +213,13 @@ const DashboardComponent = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Despesas</p>
                 <p className="text-2xl font-bold text-red-600">
-                  R$ {mockKPIs.totalExpenses.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {isKPIsLoading ? (
+                    <span className="animate-pulse bg-gray-200 h-8 w-24 rounded"></span>
+                  ) : kpisError ? (
+                    <span className="text-red-500">Erro</span>
+                  ) : (
+                    `R$ ${(kpis?.[0]?.totalExpenses || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                  )}
                 </p>
               </div>
               <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -207,7 +233,13 @@ const DashboardComponent = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Contas a Pagar</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  R$ {mockKPIs.accountsPayable.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {isKPIsLoading ? (
+                    <span className="animate-pulse bg-gray-200 h-8 w-24 rounded"></span>
+                  ) : kpisError ? (
+                    <span className="text-red-500">Erro</span>
+                  ) : (
+                    `R$ ${(kpis?.[0]?.accountsPayable || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                  )}
                 </p>
               </div>
               <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
@@ -221,7 +253,13 @@ const DashboardComponent = () => {
               <div>
                 <p className="text-sm font-medium text-gray-600">Contas Vencidas</p>
                 <p className="text-2xl font-bold text-red-600">
-                  R$ {mockKPIs.overdueAccounts.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  {isKPIsLoading ? (
+                    <span className="animate-pulse bg-gray-200 h-8 w-24 rounded"></span>
+                  ) : kpisError ? (
+                    <span className="text-red-500">Erro</span>
+                  ) : (
+                    `R$ ${(kpis?.[0]?.overdueAccounts || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                  )}
                 </p>
               </div>
               <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
@@ -238,10 +276,20 @@ const DashboardComponent = () => {
               Tendência de Receitas/Despesas
             </h3>
             <LazyChart height="300px">
-              <LazyLineChart 
-                data={mockLineChartData}
-                height={300}
-              />
+              {isLineChartLoading ? (
+                <div className="flex items-center justify-center h-[300px]">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : lineChartError ? (
+                <div className="flex items-center justify-center h-[300px] text-red-500">
+                  Erro ao carregar gráfico
+                </div>
+              ) : (
+                <LazyLineChart 
+                  data={lineChartData}
+                  height={300}
+                />
+              )}
             </LazyChart>
           </div>
           
@@ -250,56 +298,57 @@ const DashboardComponent = () => {
               Distribuição por Categorias
             </h3>
             <LazyChart height="300px">
-              <LazyPieChart 
-                data={mockPieChartData}
-                height={300}
-              />
+              {isPieChartLoading ? (
+                <div className="flex items-center justify-center h-[300px]">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              ) : pieChartError ? (
+                <div className="flex items-center justify-center h-[300px] text-red-500">
+                  Erro ao carregar gráfico
+                </div>
+              ) : (
+                <LazyPieChart 
+                  data={pieChartData}
+                  height={300}
+                />
+              )}
             </LazyChart>
           </div>
         </div>
 
-        {/* Extended Charts Section */}
+        {/* Extended Charts Section - Temporariamente removido até implementar dados reais */}
+        {/* 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Comparação Mensal por Categoria
             </h3>
-            <LazyChart height="300px">
-              <LazyBarChart 
-                data={mockBarChartData}
-                height={300}
-              />
-            </LazyChart>
+            <div className="flex items-center justify-center h-[300px] text-gray-500">
+              Gráfico em desenvolvimento
+            </div>
           </div>
           
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Fluxo de Caixa Acumulado
             </h3>
-            <LazyChart height="300px">
-              <LazyAreaChart 
-                data={mockAreaChartData}
-                height={300}
-              />
-            </LazyChart>
+            <div className="flex items-center justify-center h-[300px] text-gray-500">
+              Gráfico em desenvolvimento
+            </div>
           </div>
         </div>
 
-        {/* Horizontal Bar Chart Section */}
         <div className="mb-8">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Top Categorias de Gastos
             </h3>
-            <LazyChart height="400px">
-              <LazyBarChart 
-                data={mockHorizontalBarChartData}
-                height={400}
-                orientation="horizontal"
-              />
-            </LazyChart>
+            <div className="flex items-center justify-center h-[400px] text-gray-500">
+              Gráfico em desenvolvimento
+            </div>
           </div>
         </div>
+        */}
 
         {/* Tables Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -311,21 +360,35 @@ const DashboardComponent = () => {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {mockTransactions.map((transaction) => (
-                  <div key={transaction.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                    <div>
-                      <p className="font-medium text-gray-900">{transaction.description}</p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(transaction.date).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                    <span className={`font-medium ${
-                      transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
-                    }`}>
-                      {transaction.type === 'income' ? '+' : ''}R$ {Math.abs(transaction.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                    </span>
+                {isTransactionsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
                   </div>
-                ))}
+                ) : transactionsError ? (
+                  <div className="text-center py-8 text-red-500">
+                    Erro ao carregar transações
+                  </div>
+                ) : !transactions || transactions.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Nenhuma transação encontrada
+                  </div>
+                ) : (
+                  transactions.slice(0, 5).map((transaction) => (
+                    <div key={transaction.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                      <div>
+                        <p className="font-medium text-gray-900">{transaction.description}</p>
+                        <p className="text-sm text-gray-500">
+                          {new Date(transaction.date).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      <span className={`font-medium ${
+                        transaction.type === 'income' ? 'text-green-600' : 'text-red-600'
+                      }`}>
+                        {transaction.type === 'income' ? '+' : ''}R$ {Math.abs(transaction.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -338,40 +401,54 @@ const DashboardComponent = () => {
             </div>
             <div className="p-6">
               <div className="space-y-4">
-                {mockAccountsPayable.map((account) => {
-                  const dueDate = new Date(account.dueDate);
-                  const today = new Date();
-                  const diffTime = dueDate.getTime() - today.getTime();
-                  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                  
-                  let statusText = '';
-                  let statusColor = 'text-gray-500';
-                  
-                  if (account.status === 'overdue') {
-                    statusText = `Vencida há ${Math.abs(diffDays)} dias`;
-                    statusColor = 'text-red-500';
-                  } else if (diffDays <= 7) {
-                    statusText = `Vence em ${diffDays} dias`;
-                    statusColor = 'text-yellow-600';
-                  } else {
-                    statusText = `Vence em ${diffDays} dias`;
-                    statusColor = 'text-gray-500';
-                  }
-                  
-                  return (
-                    <div key={account.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                      <div>
-                        <p className="font-medium text-gray-900">{account.description}</p>
-                        <p className={`text-sm ${statusColor}`}>{statusText}</p>
+                {isAccountsPayableLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  </div>
+                ) : accountsPayableError ? (
+                  <div className="text-center py-8 text-red-500">
+                    Erro ao carregar contas a pagar
+                  </div>
+                ) : !accountsPayable || accountsPayable.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    Nenhuma conta a pagar encontrada
+                  </div>
+                ) : (
+                  accountsPayable.slice(0, 5).map((account) => {
+                    const dueDate = new Date(account.dueDate);
+                    const today = new Date();
+                    const diffTime = dueDate.getTime() - today.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    let statusText = '';
+                    let statusColor = 'text-gray-500';
+                    
+                    if (account.status === 'overdue') {
+                      statusText = `Vencida há ${Math.abs(diffDays)} dias`;
+                      statusColor = 'text-red-500';
+                    } else if (diffDays <= 7) {
+                      statusText = `Vence em ${diffDays} dias`;
+                      statusColor = 'text-yellow-600';
+                    } else {
+                      statusText = `Vence em ${diffDays} dias`;
+                      statusColor = 'text-gray-500';
+                    }
+                    
+                    return (
+                      <div key={account.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <div>
+                          <p className="font-medium text-gray-900">{account.description}</p>
+                          <p className={`text-sm ${statusColor}`}>{statusText}</p>
+                        </div>
+                        <span className={`font-medium ${
+                          account.status === 'overdue' ? 'text-red-600' : 'text-yellow-600'
+                        }`}>
+                          R$ {account.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        </span>
                       </div>
-                      <span className={`font-medium ${
-                        account.status === 'overdue' ? 'text-red-600' : 'text-yellow-600'
-                      }`}>
-                        R$ {account.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
