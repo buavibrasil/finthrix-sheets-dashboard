@@ -17,7 +17,7 @@ import {
   Sheet, 
   Database, 
   CheckCircle, 
-  Download,
+
   Eye,
   EyeOff
 } from 'lucide-react';
@@ -148,7 +148,7 @@ export const GoogleSheetsDemo: React.FC = () => {
                                 <div className="space-y-1">
                                   <div className="font-medium">{mapping.targetField}</div>
                                   <div className="text-xs text-muted-foreground">
-                                    {mapping.sourceColumnName} • {mapping.dataType}
+                                    {mapping.sourceColumn} • {mapping.dataType}
                                   </div>
                                 </div>
                               </TableHead>
@@ -188,7 +188,7 @@ export const GoogleSheetsDemo: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
                     {columnMappings.map((mapping) => (
                       <div key={mapping.sourceColumn} className="p-2 border rounded text-sm">
-                        <div className="font-medium">{mapping.sourceColumnName}</div>
+                        <div className="font-medium">{mapping.sourceColumn}</div>
                         <div className="text-muted-foreground">
                           → {mapping.targetField || 'Não mapeado'} ({mapping.dataType})
                         </div>

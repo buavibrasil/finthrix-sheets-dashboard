@@ -11,7 +11,7 @@ const mockNavigate = vi.fn();
 vi.mock('../stores/authStore');
 vi.mock('../services/emailVerificationService');
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+  const actual = await vi.importActual('react-router-dom') as any;
   return {
     ...actual,
     useSearchParams: () => [new URLSearchParams('email=test@example.com&token=valid-token')],
@@ -55,7 +55,7 @@ describe('EmailVerification', () => {
 
     // Mock do useNavigate
     vi.doMock('react-router-dom', async () => {
-      const actual = await vi.importActual('react-router-dom');
+      const actual = await vi.importActual('react-router-dom') as any;
       return {
         ...actual,
         useNavigate: () => mockNavigate,
@@ -82,6 +82,9 @@ describe('EmailVerification', () => {
         id: '1',
         email: 'test@example.com',
         name: 'Test User',
+        role: 'user' as const,
+        permissions: [],
+        createdAt: '2024-01-01T00:00:00Z',
         emailVerified: true,
         emailVerifiedAt: '2024-01-01T00:00:00Z'
       }
@@ -229,6 +232,9 @@ describe('EmailVerification', () => {
         id: '1',
         email: 'test@example.com',
         name: 'Test User',
+        role: 'user' as const,
+        permissions: [],
+        createdAt: '2024-01-01T00:00:00Z',
         emailVerified: true,
         emailVerifiedAt: '2024-01-01T00:00:00Z'
       }

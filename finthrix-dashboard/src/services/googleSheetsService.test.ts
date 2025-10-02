@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { googleSheetsService } from './googleSheetsService';
 
 // Mock das APIs do Google
@@ -57,7 +57,7 @@ describe('GoogleSheetsService', () => {
   describe('initialize', () => {
     it('deve inicializar com sucesso quando as APIs estão disponíveis', async () => {
       // Arrange
-      mockGapi.load.mockImplementation((apis: string, callback: () => void) => {
+      mockGapi.load.mockImplementation((_apis: string, callback: () => void) => {
         callback();
       });
       mockGapi.client.init.mockResolvedValue(undefined);
@@ -76,7 +76,7 @@ describe('GoogleSheetsService', () => {
     it('deve retornar erro quando a inicialização falha', async () => {
       // Arrange
       const error = new Error('Falha na inicialização');
-      mockGapi.load.mockImplementation((apis: string, callback: () => void) => {
+      mockGapi.load.mockImplementation((_apis: string, callback: () => void) => {
         callback();
       });
       mockGapi.client.init.mockRejectedValue(error);
@@ -137,7 +137,7 @@ describe('GoogleSheetsService', () => {
     it('deve inicializar automaticamente se não estiver inicializado', async () => {
       // Arrange
       (googleSheetsService as any).authState.isInitialized = false;
-      mockGapi.load.mockImplementation((apis: string, callback: () => void) => {
+      mockGapi.load.mockImplementation((_apis: string, callback: () => void) => {
         callback();
       });
       mockGapi.client.init.mockResolvedValue(undefined);

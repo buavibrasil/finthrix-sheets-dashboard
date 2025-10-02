@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useSync } from '../../hooks/useSync';
 import { SyncConfig } from '../../types/googleSheets';
-import { Button } from '../ui/Button';
-import { Input } from '../ui/Input';
-import { Label } from '../ui/Label';
-import { Card } from '../ui/Card';
-import { Alert } from '../ui/Alert';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Card } from '../ui/card';
+import { Alert } from '../ui/alert';
 
 interface SyncManagerProps {
   onSyncComplete?: (data: any) => void;
@@ -121,12 +121,6 @@ export const SyncManager: React.FC<SyncManagerProps> = ({
     if (result && onSyncComplete) {
       onSyncComplete(result);
     }
-  };
-
-  // Formatar dados para exibição
-  const formatOperationData = (data: any) => {
-    if (!data) return 'N/A';
-    return JSON.stringify(data, null, 2);
   };
 
   const pendingOps = getPendingOperations();
@@ -453,8 +447,18 @@ export const SyncManager: React.FC<SyncManagerProps> = ({
 
       {/* Exibição de Erros */}
       {error && (
-        <Alert variant="error" onClose={clearError}>
-          <strong>Erro:</strong> {error.message}
+        <Alert variant="destructive">
+          <div className="flex justify-between items-start">
+            <div>
+              <strong>Erro:</strong> {error.message}
+            </div>
+            <button 
+              onClick={clearError}
+              className="ml-2 text-sm hover:opacity-70"
+            >
+              ✕
+            </button>
+          </div>
         </Alert>
       )}
     </div>

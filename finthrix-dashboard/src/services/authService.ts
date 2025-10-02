@@ -1,4 +1,5 @@
 import api from './api';
+import { mockApi } from './mockApi';
 import { 
   LoginCredentials, 
   RegisterData, 
@@ -25,7 +26,29 @@ class AuthService {
       
       return authData;
     } catch (error) {
-      console.error('Erro no login:', error);
+      console.error('Erro no login (API real):', error);
+      
+      // Fallback para mock se a API real não estiver disponível
+      if (this.isNetworkError(error)) {
+        console.log('API real não disponível, usando mock...');
+        try {
+          const authData = await mockApi.login(credentials);
+          
+          // Salvar token no localStorage
+          localStorage.setItem('auth_token', authData.token);
+          localStorage.setItem('refresh_token', authData.refreshToken);
+          
+          if (credentials.rememberMe) {
+            localStorage.setItem('remember_me', 'true');
+          }
+          
+          return authData;
+        } catch (mockError) {
+          console.error('Erro no login (mock):', mockError);
+          throw mockError;
+        }
+      }
+      
       throw error;
     }
   }
@@ -42,7 +65,25 @@ class AuthService {
       
       return authData;
     } catch (error) {
-      console.error('Erro no registro:', error);
+      console.error('Erro no registro (API real):', error);
+      
+      // Fallback para mock se a API real não estiver disponível
+      if (this.isNetworkError(error)) {
+        console.log('API real não disponível, usando mock...');
+        try {
+          const authData = await mockApi.register(userData);
+          
+          // Salvar token no localStorage
+          localStorage.setItem('auth_token', authData.token);
+          localStorage.setItem('refresh_token', authData.refreshToken);
+          
+          return authData;
+        } catch (mockError) {
+          console.error('Erro no registro (mock):', mockError);
+          throw mockError;
+        }
+      }
+      
       throw error;
     }
   }
@@ -99,7 +140,22 @@ class AuthService {
       const response = await api.get('/auth/me');
       return response.data;
     } catch (error) {
-      console.error('Erro ao buscar usuário atual:', error);
+      console.error('Erro ao buscar usuário atual (API real):', error);
+      
+      // Fallback para mock se a API real não estiver disponível
+      if (this.isNetworkError(error)) {
+        console.log('API real não disponível, usando mock...');
+        try {
+          const token = this.getToken();
+          if (token) {
+            return await mockApi.getCurrentUser(token);
+          }
+        } catch (mockError) {
+          console.error('Erro ao buscar usuário atual (mock):', mockError);
+          throw mockError;
+        }
+      }
+      
       throw error;
     }
   }
@@ -138,6 +194,17 @@ class AuthService {
   // Verificar se deve lembrar do usuário
   shouldRememberUser(): boolean {
     return localStorage.getItem('remember_me') === 'true';
+  }
+
+  // Método auxiliar para detectar erros de rede
+  private isNetworkError(error: any): boolean {
+    return (
+      error.code === 'ECONNREFUSED' ||
+      error.code === 'NETWORK_ERROR' ||
+      error.message?.includes('Network Error') ||
+      error.message?.includes('ECONNREFUSED') ||
+      !error.response // Axios não conseguiu fazer a requisição
+    );
   }
 }
 

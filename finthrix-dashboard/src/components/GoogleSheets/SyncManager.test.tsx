@@ -13,15 +13,18 @@ const mockUseSync = vi.mocked(useSync);
 describe('SyncManager', () => {
   const mockSyncHook = {
     syncState: {
-      enabled: false,
-      direction: 'bidirectional' as const,
-      frequency: 'manual' as const,
-      autoSync: false,
+      isActive: false,
+      lastSync: null,
       operations: [],
-      isProcessing: false
+      config: {
+        enabled: false,
+        direction: 'bidirectional' as const,
+        frequency: 'manual' as const,
+        autoSync: false
+      }
     },
     isProcessing: false,
-    error: null,
+    error: null as any,
     configure: vi.fn(),
     queueRead: vi.fn(),
     queueWrite: vi.fn(),
@@ -142,7 +145,10 @@ describe('SyncManager', () => {
 
   describe('estados de erro', () => {
     it('deve exibir erro quando presente', () => {
-      mockSyncHook.error = { message: 'Erro de conexão com Google Sheets' };
+      mockSyncHook.error = { 
+        code: 'CONNECTION_ERROR',
+        message: 'Erro de conexão com Google Sheets' 
+      };
       
       render(<SyncManager />);
       

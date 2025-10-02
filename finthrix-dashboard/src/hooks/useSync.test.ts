@@ -25,14 +25,15 @@ describe('useSync', () => {
     
     // Mock padrão do estado
     mockSyncService.getSyncState.mockReturnValue({
-      enabled: false,
-      direction: 'bidirectional',
-      frequency: 'manual',
-      autoSync: false,
-      operations: [],
-      isProcessing: false,
+      isActive: false,
       lastSync: null,
-      errors: []
+      operations: [],
+      config: {
+        enabled: false,
+        direction: 'bidirectional',
+        frequency: 'manual',
+        autoSync: false
+      }
     });
   });
 
@@ -43,16 +44,16 @@ describe('useSync', () => {
       act(() => {
         result.current.configure({
           enabled: true,
-          direction: 'read',
-          frequency: 'realtime',
+          direction: 'import',
+          frequency: 'hourly',
           autoSync: true
         });
       });
 
       expect(mockSyncService.configure).toHaveBeenCalledWith({
         enabled: true,
-        direction: 'read',
-        frequency: 'realtime',
+        direction: 'import',
+      frequency: 'hourly',
         autoSync: true
       });
     });
@@ -283,37 +284,40 @@ describe('useSync', () => {
       const { result } = renderHook(() => useSync());
 
       expect(result.current.syncState).toEqual({
-        enabled: false,
-        direction: 'bidirectional',
-        frequency: 'manual',
-        autoSync: false,
-        operations: [],
-        isProcessing: false,
+        isActive: false,
         lastSync: null,
-        errors: []
+        operations: [],
+        config: {
+          enabled: false,
+          direction: 'bidirectional',
+          frequency: 'manual',
+          autoSync: false
+        }
       });
     });
 
     it('deve atualizar estado após configuração', () => {
       // Configura o mock para retornar novo estado após configuração
       mockSyncService.getSyncState.mockReturnValueOnce({
-        enabled: false,
-        direction: 'bidirectional',
-        frequency: 'manual',
-        autoSync: false,
-        operations: [],
-        isProcessing: false,
+        isActive: false,
         lastSync: null,
-        errors: []
+        operations: [],
+        config: {
+          enabled: false,
+          direction: 'bidirectional',
+          frequency: 'manual',
+          autoSync: false
+        }
       }).mockReturnValueOnce({
-        enabled: true,
-        direction: 'read',
-        frequency: 'realtime',
-        autoSync: true,
-        operations: [],
-        isProcessing: false,
+        isActive: false,
         lastSync: null,
-        errors: []
+        operations: [],
+        config: {
+          enabled: true,
+          direction: 'import',
+          frequency: 'hourly',
+          autoSync: true
+        }
       });
 
       const { result } = renderHook(() => useSync());
@@ -321,16 +325,16 @@ describe('useSync', () => {
       act(() => {
         result.current.configure({
           enabled: true,
-          direction: 'read',
-          frequency: 'realtime',
+          direction: 'import',
+          frequency: 'hourly',
           autoSync: true
         });
       });
 
-      expect(result.current.syncState.enabled).toBe(true);
-      expect(result.current.syncState.direction).toBe('read');
-      expect(result.current.syncState.frequency).toBe('realtime');
-      expect(result.current.syncState.autoSync).toBe(true);
+      expect(result.current.syncState.config.enabled).toBe(true);
+      expect(result.current.syncState.config.direction).toBe('import');
+      expect(result.current.syncState.config.frequency).toBe('hourly');
+      expect(result.current.syncState.config.autoSync).toBe(true);
     });
   });
 });

@@ -39,6 +39,7 @@ describe('AuthStore', () => {
       role: 'user' as const,
       permissions: ['read'],
       createdAt: '2024-01-01T00:00:00Z',
+      emailVerified: true,
     }
     
     const mockResponse = {
@@ -89,6 +90,7 @@ describe('AuthStore', () => {
       role: 'user' as const,
       permissions: ['read'],
       createdAt: '2024-01-01T00:00:00Z',
+      emailVerified: true,
     }
 
     mockAuthService.login.mockResolvedValue({

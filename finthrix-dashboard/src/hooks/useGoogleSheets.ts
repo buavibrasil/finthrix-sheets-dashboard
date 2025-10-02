@@ -4,7 +4,6 @@ import {
   GoogleSheetsAuthState,
   SpreadsheetInfo,
   RangeData,
-  GoogleSheetsResponse,
   GoogleSheetsError
 } from '../types/googleSheets';
 
@@ -129,7 +128,7 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
       const result = await googleSheetsService.getSpreadsheetInfo(spreadsheetId);
       
       if (result.success) {
-        return result.data;
+        return result.data || null;
       } else {
         setError(result.error || {
           code: 'UNKNOWN_ERROR',
@@ -158,7 +157,7 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
       const result = await googleSheetsService.readRange(spreadsheetId, range);
       
       if (result.success) {
-        return result.data;
+        return result.data || null;
       } else {
         setError(result.error || {
           code: 'UNKNOWN_ERROR',

@@ -54,12 +54,10 @@ export const GoogleSheetsImport: React.FC<GoogleSheetsImportProps> = ({
   // Atualiza os mapeamentos quando as colunas selecionadas mudam
   useEffect(() => {
     if (previewData && previewData.values.length > 0) {
-      const headerRow = hasHeader ? previewData.values[0] : [];
       const newMappings: ColumnMapping[] = selectedColumns.map((colIndex) => {
-        const existingMapping = mappings.find(m => m.sourceColumn === colIndex);
+        const existingMapping = mappings.find(m => m.sourceColumn === colIndex.toString());
         return existingMapping || {
-          sourceColumn: colIndex,
-          sourceColumnName: headerRow[colIndex]?.toString() || `Coluna ${colIndex + 1}`,
+          sourceColumn: colIndex.toString(),
           targetField: '',
           dataType: 'string',
           required: false
@@ -106,7 +104,7 @@ export const GoogleSheetsImport: React.FC<GoogleSheetsImportProps> = ({
 
   const handleMappingChange = (columnIndex: number, field: keyof ColumnMapping, value: any) => {
     setMappings(prev => prev.map(mapping => 
-      mapping.sourceColumn === columnIndex
+      mapping.sourceColumn === columnIndex.toString()
         ? { ...mapping, [field]: value }
         : mapping
     ));
@@ -122,19 +120,19 @@ export const GoogleSheetsImport: React.FC<GoogleSheetsImportProps> = ({
       const processedRow: any = { _rowIndex: index };
       
       mappings.forEach(mapping => {
-        const cellValue = row[mapping.sourceColumn];
+        const cellValue = row[parseInt(mapping.sourceColumn)];
         let processedValue = cellValue;
 
         // Aplica conversão de tipo
         switch (mapping.dataType) {
           case 'number':
-            processedValue = cellValue ? parseFloat(cellValue.toString()) : null;
+            processedValue = cellValue ? parseFloat(cellValue.toString()) : 0;
             break;
           case 'boolean':
             processedValue = ['true', '1', 'sim', 'yes'].includes(cellValue?.toString().toLowerCase());
             break;
           case 'date':
-            processedValue = cellValue ? new Date(cellValue.toString()) : null;
+            processedValue = cellValue ? new Date(cellValue.toString()).toISOString() : '';
             break;
           default:
             processedValue = cellValue?.toString() || '';
@@ -243,7 +241,7 @@ export const GoogleSheetsImport: React.FC<GoogleSheetsImportProps> = ({
                     const headerValue = hasHeader ? previewData.values[0][columnIndex] : `Coluna ${columnIndex + 1}`;
                     const isSelected = selectedColumns.includes(columnIndex);
                     const preview = getColumnPreview(columnIndex);
-                    const mapping = mappings.find(m => m.sourceColumn === columnIndex);
+                    const mapping = mappings.find(m => m.sourceColumn === columnIndex.toString());
 
                     return (
                       <div key={columnIndex} className="border rounded-lg p-4">

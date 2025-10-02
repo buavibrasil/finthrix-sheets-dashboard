@@ -30,7 +30,6 @@ export default defineConfig({
         manualChunks: {
           // Vendor chunks para bibliotecas grandes
           'react-vendor': ['react', 'react-dom'],
-          'chart-vendor': ['recharts'],
           'export-vendor': ['jspdf', 'html2canvas', 'xlsx'],
           'ui-vendor': ['lucide-react'],
           // Chunks por funcionalidade

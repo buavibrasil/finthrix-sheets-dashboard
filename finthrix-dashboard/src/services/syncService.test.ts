@@ -26,7 +26,7 @@ describe('SyncService', () => {
     });
     
     // Limpa todas as operações (não apenas as concluídas)
-    const state = syncService.getSyncState();
+    syncService.getSyncState();
     (syncService as any).syncState.operations = [];
     (syncService as any).operationQueue = [];
   });
@@ -327,12 +327,12 @@ describe('SyncService', () => {
         error: { code: 'WRITE_ERROR', message: 'Erro' }
       });
 
-      const readOpId = syncService.queueOperation({
+      syncService.queueOperation({
         type: 'read',
         spreadsheetId: 'sheet123',
         range: 'A1:C3'
       });
-      const writeOpId = syncService.queueOperation({
+      syncService.queueOperation({
         type: 'write',
         spreadsheetId: 'sheet123',
         range: 'A1:B2',
@@ -393,7 +393,7 @@ describe('SyncService', () => {
       });
 
       // Adiciona uma operação que será processada
-      const completedId = syncService.queueOperation({
+      syncService.queueOperation({
         type: 'read',
         spreadsheetId: 'sheet123',
         range: 'A1:C3'
