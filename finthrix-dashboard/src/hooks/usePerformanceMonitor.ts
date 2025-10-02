@@ -1,110 +1,183 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 
-interface PerformanceMetrics {
-  loadTime: number;
-  renderTime: number;
-  memoryUsage: number;
-  bundleSize: number;
-  chunkCount: number;
+interface PerformanceMetric {
+  componentName: string;
+  operation: string;
+  duration: number;
+  timestamp: number;
+  metadata?: Record<string, any>;
 }
 
-// Usando tipos nativos do DOM para PerformanceNavigationTiming
+interface PerformanceMonitorOptions {
+  enabled?: boolean;
+  threshold?: number; // ms - só reporta se duração for maior que threshold
+  maxMetrics?: number; // máximo de métricas a manter em memória
+}
 
-export const usePerformanceMonitor = () => {
-  const [metrics, setMetrics] = useState<PerformanceMetrics>({
-    loadTime: 0,
-    renderTime: 0,
-    memoryUsage: 0,
-    bundleSize: 0,
-    chunkCount: 0
-  });
+class PerformanceCollector {
+  private static instance: PerformanceCollector;
+  private metrics: PerformanceMetric[] = [];
+  private maxMetrics: number = 100;
 
-  const [isLoading, setIsLoading] = useState(true);
+  static getInstance(): PerformanceCollector {
+    if (!PerformanceCollector.instance) {
+      PerformanceCollector.instance = new PerformanceCollector();
+    }
+    return PerformanceCollector.instance;
+  }
 
+  addMetric(metric: PerformanceMetric) {
+    this.metrics.push(metric);
+    
+    // Mantém apenas as métricas mais recentes
+    if (this.metrics.length > this.maxMetrics) {
+      this.metrics = this.metrics.slice(-this.maxMetrics);
+    }
+
+    // Log para desenvolvimento
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Performance] ${metric.componentName}.${metric.operation}: ${metric.duration}ms`, metric.metadata);
+    }
+
+    // Em produção, pode enviar para serviço de monitoramento
+    if (process.env.NODE_ENV === 'production') {
+      this.sendToMonitoringService(metric);
+    }
+  }
+
+  getMetrics(): PerformanceMetric[] {
+    return [...this.metrics];
+  }
+
+  getMetricsByComponent(componentName: string): PerformanceMetric[] {
+    return this.metrics.filter(m => m.componentName === componentName);
+  }
+
+  getAverageTime(componentName: string, operation: string): number {
+    const relevantMetrics = this.metrics.filter(
+      m => m.componentName === componentName && m.operation === operation
+    );
+    
+    if (relevantMetrics.length === 0) return 0;
+    
+    const total = relevantMetrics.reduce((sum, m) => sum + m.duration, 0);
+    return total / relevantMetrics.length;
+  }
+
+  private sendToMonitoringService(metric: PerformanceMetric) {
+    // Implementar integração com serviço de monitoramento (ex: DataDog, New Relic, etc.)
+    // Por enquanto, apenas simula o envio
+    if (metric.duration > 100) { // Só reporta operações lentas
+      console.warn(`[Performance Alert] Slow operation detected: ${metric.componentName}.${metric.operation} took ${metric.duration}ms`);
+    }
+  }
+
+  clearMetrics() {
+    this.metrics = [];
+  }
+}
+
+export function usePerformanceMonitor(
+  componentName: string,
+  options: PerformanceMonitorOptions = {}
+) {
+  const {
+    enabled = true,
+    threshold = 0,
+    maxMetrics = 100
+  } = options;
+
+  const collector = PerformanceCollector.getInstance();
+  const timersRef = useRef<Map<string, number>>(new Map());
+
+  // Configura o coletor
   useEffect(() => {
-    const measurePerformance = () => {
-      try {
-        // Timing de navegação
-        const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-        const loadTime = navigation.loadEventEnd - navigation.fetchStart;
-        const renderTime = navigation.domContentLoadedEventEnd - navigation.fetchStart;
+    collector['maxMetrics'] = maxMetrics;
+  }, [maxMetrics]);
 
-        // Memória (se disponível)
-        const memory = (performance as any).memory;
-        const memoryUsage = memory ? memory.usedJSHeapSize / 1024 / 1024 : 0; // MB
+  const startTimer = useCallback((operation: string) => {
+    if (!enabled) return;
+    timersRef.current.set(operation, performance.now());
+  }, [enabled]);
 
-        // Recursos carregados (aproximação do bundle size)
-        const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-        const jsResources = resources.filter(resource => 
-          resource.name.includes('.js') || resource.name.includes('.tsx') || resource.name.includes('.ts')
-        );
-        
-        const bundleSize = jsResources.reduce((total, resource) => {
-          return total + (resource.transferSize || 0);
-        }, 0) / 1024; // KB
+  const endTimer = useCallback((operation: string, metadata?: Record<string, any>) => {
+    if (!enabled) return;
 
-        const chunkCount = jsResources.length;
-
-        setMetrics({
-          loadTime: Math.round(loadTime),
-          renderTime: Math.round(renderTime),
-          memoryUsage: Math.round(memoryUsage * 100) / 100,
-          bundleSize: Math.round(bundleSize * 100) / 100,
-          chunkCount
-        });
-
-        setIsLoading(false);
-      } catch (error) {
-        console.warn('Performance monitoring não disponível:', error);
-        setIsLoading(false);
-      }
-    };
-
-    // Aguardar o carregamento completo
-    if (document.readyState === 'complete') {
-      measurePerformance();
-    } else {
-      window.addEventListener('load', measurePerformance);
-      return () => window.removeEventListener('load', measurePerformance);
-    }
-  }, []);
-
-  const getPerformanceGrade = (): 'excellent' | 'good' | 'fair' | 'poor' => {
-    const { loadTime, bundleSize } = metrics;
-    
-    if (loadTime < 1000 && bundleSize < 500) return 'excellent';
-    if (loadTime < 2000 && bundleSize < 1000) return 'good';
-    if (loadTime < 3000 && bundleSize < 1500) return 'fair';
-    return 'poor';
-  };
-
-  const getOptimizationSuggestions = (): string[] => {
-    const suggestions: string[] = [];
-    const { loadTime, bundleSize, chunkCount } = metrics;
-
-    if (loadTime > 2000) {
-      suggestions.push('Considere implementar mais lazy loading');
-    }
-    
-    if (bundleSize > 1000) {
-      suggestions.push('Bundle size alto - considere code splitting adicional');
-    }
-    
-    if (chunkCount < 3) {
-      suggestions.push('Poucos chunks - considere dividir o código em mais partes');
-    }
-    
-    if (metrics.memoryUsage > 50) {
-      suggestions.push('Alto uso de memória - verifique vazamentos');
+    const startTime = timersRef.current.get(operation);
+    if (!startTime) {
+      console.warn(`[Performance] Timer not found for operation: ${operation}`);
+      return;
     }
 
-    return suggestions;
-  };
+    const duration = performance.now() - startTime;
+    timersRef.current.delete(operation);
+
+    // Só adiciona métrica se duração for maior que threshold
+    if (duration >= threshold) {
+      collector.addMetric({
+        componentName,
+        operation,
+        duration,
+        timestamp: Date.now(),
+        metadata
+      });
+    }
+  }, [enabled, threshold, componentName]);
+
+  const measureAsync = useCallback(async <T>(
+    operation: string,
+    asyncFn: () => Promise<T>,
+    metadata?: Record<string, any>
+  ): Promise<T> => {
+    if (!enabled) return asyncFn();
+
+    startTimer(operation);
+    try {
+      const result = await asyncFn();
+      endTimer(operation, { ...metadata, success: true });
+      return result;
+    } catch (error) {
+      endTimer(operation, { ...metadata, success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+      throw error;
+    }
+  }, [enabled, startTimer, endTimer]);
+
+  const measureSync = useCallback(<T>(
+    operation: string,
+    syncFn: () => T,
+    metadata?: Record<string, any>
+  ): T => {
+    if (!enabled) return syncFn();
+
+    startTimer(operation);
+    try {
+      const result = syncFn();
+      endTimer(operation, { ...metadata, success: true });
+      return result;
+    } catch (error) {
+      endTimer(operation, { ...metadata, success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+      throw error;
+    }
+  }, [enabled, startTimer, endTimer]);
+
+  const getComponentMetrics = useCallback(() => {
+    return collector.getMetricsByComponent(componentName);
+  }, [componentName]);
+
+  const getAverageTime = useCallback((operation: string) => {
+    return collector.getAverageTime(componentName, operation);
+  }, [componentName]);
 
   return {
-    metrics,
-    isLoading,
-    grade: getPerformanceGrade(),
-    suggestions: getOptimizationSuggestions()
+    startTimer,
+    endTimer,
+    measureAsync,
+    measureSync,
+    getComponentMetrics,
+    getAverageTime,
+    collector
   };
-};
+}
+
+export { PerformanceCollector };
+export type { PerformanceMetric, PerformanceMonitorOptions };

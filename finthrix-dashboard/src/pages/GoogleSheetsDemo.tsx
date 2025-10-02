@@ -1,5 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { GoogleSheetsIntegration } from '../components/GoogleSheets';
+import { GoogleSheetsTest } from '../components/GoogleSheets/GoogleSheetsTest';
+import { GoogleSheetsGuide } from '@/components/GoogleSheets/GoogleSheetsGuide';
+import { GoogleSheetsDebug } from '@/components/GoogleSheets/GoogleSheetsDebug';
 import { ColumnMapping } from '../types/googleSheets';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
@@ -32,17 +35,17 @@ export const GoogleSheetsDemo: React.FC = () => {
   } | null>(null);
   const [showRawData, setShowRawData] = useState(false);
 
-  const handleDataImported = (data: any[], mappings: ColumnMapping[]) => {
+  const handleDataImported = useCallback((data: any[], mappings: ColumnMapping[]) => {
     setImportedData(data);
     setColumnMappings(mappings);
     console.log('Dados importados:', data);
     console.log('Mapeamentos:', mappings);
-  };
+  }, []);
 
-  const handleConfigSaved = (config: { spreadsheetId: string; sheetName: string; range?: string }) => {
+  const handleConfigSaved = useCallback((config: { spreadsheetId: string; sheetName: string; range?: string }) => {
     setSheetConfig(config);
     console.log('Configuração salva:', config);
-  };
+  }, []);
 
   const getDisplayColumns = () => {
     return columnMappings.filter(mapping => mapping.targetField);
@@ -87,6 +90,18 @@ export const GoogleSheetsDemo: React.FC = () => {
           </AlertDescription>
         </Alert>
       )}
+
+      {/* Debug Component */}
+      <GoogleSheetsDebug />
+
+      {/* Guia de Importação */}
+      <GoogleSheetsGuide
+        hasConfig={!!sheetConfig}
+        hasData={importedData.length > 0}
+      />
+
+      {/* Componente de Teste das APIs */}
+      <GoogleSheetsTest />
 
       {/* Componente de Integração */}
       <GoogleSheetsIntegration

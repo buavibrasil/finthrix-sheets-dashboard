@@ -31,6 +31,8 @@ class GoogleSheetsService {
       discoveryDoc: import.meta.env.VITE_GOOGLE_DISCOVERY_DOC || 'https://sheets.googleapis.com/$discovery/rest?version=v4',
       scopes: import.meta.env.VITE_GOOGLE_SCOPES || 'https://www.googleapis.com/auth/spreadsheets'
     };
+    
+
   }
 
   /**
@@ -42,7 +44,18 @@ class GoogleSheetsService {
         return { success: true, data: true };
       }
 
-      // Carrega a API do Google se não estiver carregada
+      // Verifica se as credenciais estão configuradas
+      if (!this.config.clientId || !this.config.apiKey) {
+        console.error('[GoogleSheetsService] Credenciais não configuradas:', {
+          clientId: !!this.config.clientId,
+          apiKey: !!this.config.apiKey
+        });
+        throw new Error('Credenciais do Google não configuradas');
+      }
+
+      // Carrega a API do Google
+      await this.loadGoogleAPI();
+
       if (!window.gapi) {
         await this.loadGoogleAPI();
       }
@@ -58,17 +71,14 @@ class GoogleSheetsService {
               discoveryDocs: [this.config.discoveryDoc]
             });
 
-            // Inicializa o cliente OAuth2
             if (window.google?.accounts?.oauth2) {
               this.tokenClient = window.google.accounts.oauth2.initTokenClient({
                 client_id: this.config.clientId,
                 scope: this.config.scopes,
                 callback: (response: any) => {
-                  if (response.error) {
-                    console.error('Erro na autenticação:', response.error);
-                    return;
+                  if (response.access_token) {
+                    this.authState.isSignedIn = true;
                   }
-                  this.handleAuthSuccess();
                 }
               });
             }
@@ -76,6 +86,7 @@ class GoogleSheetsService {
             this.authState.isInitialized = true;
             resolve();
           } catch (error) {
+            console.error('[GoogleSheetsService] Erro durante inicialização:', error);
             reject(error);
           }
         });
@@ -105,14 +116,15 @@ class GoogleSheetsService {
       const script = document.createElement('script');
       script.src = 'https://apis.google.com/js/api.js';
       script.onload = () => {
-        // Carrega também a biblioteca de autenticação
         const authScript = document.createElement('script');
         authScript.src = 'https://accounts.google.com/gsi/client';
-        authScript.onload = () => resolve();
-        authScript.onerror = () => reject(new Error('Erro ao carregar Google Auth'));
+        authScript.onload = () => {
+          resolve();
+        };
+        authScript.onerror = () => reject(new Error('Falha ao carregar Google Auth script'));
         document.head.appendChild(authScript);
       };
-      script.onerror = () => reject(new Error('Erro ao carregar Google API'));
+      script.onerror = () => reject(new Error('Falha ao carregar Google API script'));
       document.head.appendChild(script);
     });
   }
@@ -188,7 +200,7 @@ class GoogleSheetsService {
    * Obtém informações do usuário autenticado
    */
   getAuthState(): GoogleSheetsAuthState {
-    return { ...this.authState };
+    return this.authState;
   }
 
   /**

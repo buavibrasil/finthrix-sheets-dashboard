@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { googleSheetsService } from '../services/googleSheetsService';
+import { usePerformanceMonitor } from './usePerformanceMonitor';
 import {
   GoogleSheetsAuthState,
   SpreadsheetInfo,
@@ -30,6 +31,8 @@ interface UseGoogleSheetsReturn {
 }
 
 export const useGoogleSheets = (): UseGoogleSheetsReturn => {
+  console.log('[useGoogleSheets] Hook criado/re-renderizado');
+  
   const [authState, setAuthState] = useState<GoogleSheetsAuthState>({
     isSignedIn: false,
     isInitialized: false
@@ -38,13 +41,21 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
   const [isOperationLoading, setIsOperationLoading] = useState(false);
   const [error, setError] = useState<GoogleSheetsError | null>(null);
 
+  // Monitoramento de performance
+  const { measureAsync, measureSync, getComponentMetrics } = usePerformanceMonitor('useGoogleSheets', {
+    enabled: true,
+    threshold: 10 // só monitora operações que demoram mais de 10ms
+  });
+
   // Inicializa o serviço Google Sheets
   const initialize = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const result = await googleSheetsService.initialize();
+      const result = await measureAsync('initialize', async () => {
+        return await googleSheetsService.initialize();
+      });
       
       if (result.success) {
         setAuthState(googleSheetsService.getAuthState());
@@ -63,7 +74,7 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [measureAsync]);
 
   // Faz login no Google
   const signIn = useCallback(async () => {
@@ -71,7 +82,9 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     setError(null);
     
     try {
-      const result = await googleSheetsService.signIn();
+      const result = await measureAsync('signIn', async () => {
+        return await googleSheetsService.signIn();
+      });
       
       if (result.success) {
         setAuthState(googleSheetsService.getAuthState());
@@ -90,7 +103,7 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [measureAsync]);
 
   // Faz logout do Google
   const signOut = useCallback(async () => {
@@ -98,7 +111,9 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     setError(null);
     
     try {
-      const result = await googleSheetsService.signOut();
+      const result = await measureAsync('signOut', async () => {
+        return await googleSheetsService.signOut();
+      });
       
       if (result.success) {
         setAuthState(googleSheetsService.getAuthState());
@@ -117,7 +132,7 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [measureAsync]);
 
   // Obtém informações de uma planilha
   const getSpreadsheetInfo = useCallback(async (spreadsheetId: string): Promise<SpreadsheetInfo | null> => {
@@ -125,7 +140,9 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     setError(null);
     
     try {
-      const result = await googleSheetsService.getSpreadsheetInfo(spreadsheetId);
+      const result = await measureAsync('getSpreadsheetInfo', async () => {
+        return await googleSheetsService.getSpreadsheetInfo(spreadsheetId);
+      }, { spreadsheetId });
       
       if (result.success) {
         return result.data || null;
@@ -146,7 +163,7 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     } finally {
       setIsOperationLoading(false);
     }
-  }, []);
+  }, [measureAsync]);
 
   // Lê dados de um intervalo
   const readRange = useCallback(async (spreadsheetId: string, range: string): Promise<RangeData | null> => {
@@ -252,7 +269,14 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
   useEffect(() => {
     const updateAuthState = () => {
       const currentState = googleSheetsService.getAuthState();
-      setAuthState(currentState);
+      setAuthState(prevState => {
+        // Só atualiza se realmente mudou
+        if (prevState.isSignedIn !== currentState.isSignedIn || 
+            prevState.isInitialized !== currentState.isInitialized) {
+          return currentState;
+        }
+        return prevState;
+      });
     };
 
     // Verifica o estado inicial
@@ -264,12 +288,8 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     return () => clearInterval(interval);
   }, []);
 
-  // Inicializa automaticamente quando o componente é montado
-  useEffect(() => {
-    if (!authState.isInitialized && !isLoading) {
-      initialize();
-    }
-  }, [authState.isInitialized, isLoading, initialize]);
+  // Removido: inicialização automática que causava loop infinito
+  // O usuário deve clicar no botão "Inicializar" manualmente
 
   return {
     authState,
@@ -283,6 +303,8 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     writeRange,
     appendData,
     isOperationLoading,
-    clearError
+    clearError,
+    // Métricas de performance
+    getPerformanceMetrics: getComponentMetrics
   };
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { SpreadsheetInfo, SheetInfo, ColumnMapping } from '../../types/googleSheets';
 import { GoogleSheetsConfig } from './GoogleSheetsConfig';
 import { GoogleSheetsImport } from './GoogleSheetsImport';
@@ -44,13 +44,13 @@ export const GoogleSheetsIntegration: React.FC<GoogleSheetsIntegrationProps> = (
     setIsConfigured(true);
   };
 
-  const handleConfigChange = (config: { spreadsheetId: string; sheetName: string; range?: string }) => {
+  const handleConfigChange = useCallback((config: { spreadsheetId: string; sheetName: string; range?: string }) => {
     setRange(config.range || '');
     
     if (onConfigSaved) {
       onConfigSaved(config);
     }
-  };
+  }, [onConfigSaved]);
 
   const handleDataImported = (data: any[], mappings: ColumnMapping[]) => {
     setLastImportTime(new Date());

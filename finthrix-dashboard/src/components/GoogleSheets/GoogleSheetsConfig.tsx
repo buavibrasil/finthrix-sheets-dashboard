@@ -23,6 +23,8 @@ export const GoogleSheetsConfig: React.FC<GoogleSheetsConfigProps> = ({
   initialSheetName = '',
   initialRange = ''
 }) => {
+  console.log('[GoogleSheetsConfig] Componente renderizado');
+  
   const {
     authState,
     isLoading,
@@ -33,6 +35,12 @@ export const GoogleSheetsConfig: React.FC<GoogleSheetsConfigProps> = ({
     isOperationLoading,
     clearError
   } = useGoogleSheets();
+  
+  console.log('[GoogleSheetsConfig] Estado do hook:', {
+    authState,
+    isLoading,
+    error: error?.message
+  });
 
   const [spreadsheetId, setSpreadsheetId] = useState(initialSpreadsheetId);
   const [selectedSheet, setSelectedSheet] = useState(initialSheetName);

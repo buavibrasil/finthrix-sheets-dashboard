@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Google API</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e9; color: #2e7d32; }
+        .info { background: #e3f2fd; color: #1565c0; }
+    </style>
+</head>
+<body>
+    <h1>Teste de Carregamento das APIs do Google</h1>
+    <div id="logs"></div>
+    
+    <script>
+        const logsDiv = document.getElementById('logs');
+        
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            logsDiv.appendChild(div);
+            console.log(`[TEST] ${message}`);
+        }
+        
+        addLog('Iniciando teste de carregamento das APIs do Google');
+        
+        // Teste 1: Verificar se as variáveis de ambiente estão disponíveis
+        const clientId = 'VITE_GOOGLE_CLIENT_ID' in window ? window.VITE_GOOGLE_CLIENT_ID : 'Não disponível';
+        const apiKey = 'VITE_GOOGLE_API_KEY' in window ? window.VITE_GOOGLE_API_KEY : 'Não disponível';
+        
+        addLog(`Client ID: ${clientId}`);
+        addLog(`API Key: ${apiKey}`);
+        
+        // Teste 2: Carregar Google API
+        addLog('Carregando Google API...');
+        
+        const script1 = document.createElement('script');
+        script1.src = 'https://apis.google.com/js/api.js';
+        script1.onload = () => {
+            addLog('Google API carregada com sucesso', 'success');
+            
+            // Teste 3: Carregar Google Auth
+            addLog('Carregando Google Auth...');
+            const script2 = document.createElement('script');
+            script2.src = 'https://accounts.google.com/gsi/client';
+            script2.onload = () => {
+                addLog('Google Auth carregada com sucesso', 'success');
+                
+                // Teste 4: Verificar objetos disponíveis
+                setTimeout(() => {
+                    addLog(`window.gapi disponível: ${!!window.gapi}`);
+                    addLog(`window.google disponível: ${!!window.google}`);
+                    addLog(`window.google.accounts disponível: ${!!(window.google && window.google.accounts)}`);
+                    addLog(`window.google.accounts.oauth2 disponível: ${!!(window.google && window.google.accounts && window.google.accounts.oauth2)}`);
+                    
+                    if (window.gapi) {
+                        addLog('Testando gapi.load...', 'info');
+                        window.gapi.load('client:auth2', () => {
+                            addLog('gapi.load client:auth2 executado com sucesso', 'success');
+                        });
+                    }
+                }, 1000);
+            };
+            script2.onerror = () => {
+                addLog('Erro ao carregar Google Auth', 'error');
+            };
+            document.head.appendChild(script2);
+        };
+        script1.onerror = () => {
+            addLog('Erro ao carregar Google API', 'error');
+        };
+        document.head.appendChild(script1);
+    </script>
+</body>
+</html>

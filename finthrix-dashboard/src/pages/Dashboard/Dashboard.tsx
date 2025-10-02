@@ -1,4 +1,4 @@
-import { memo, Suspense, lazy } from 'react'
+import { memo, Suspense, lazy, useMemo } from 'react'
 import { useDashboardStore } from '@/stores/dashboardStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useDashboard } from '@/hooks/useDashboard'
@@ -6,6 +6,7 @@ import { LazyLineChart, LazyPieChart, LazyBarChart, LazyAreaChart, LazyChart } f
 import { Header } from '@/components/Layout'
 import { ExportButton } from '@/components/Export'
 import EmailVerificationBanner from '@/components/Auth/EmailVerificationBanner'
+import { FunctionalButton } from '@/components/Demo/FunctionalButton'
 
 const DashboardComponent = () => {
   const { filters, setFilters } = useDashboardStore();
@@ -267,6 +268,11 @@ const DashboardComponent = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Functional Button Demo */}
+        <div className="mb-8">
+          <FunctionalButton />
         </div>
 
         {/* Charts Section */}
