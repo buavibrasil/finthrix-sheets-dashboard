@@ -1,8 +1,8 @@
-import { memo, Suspense, lazy, useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import { useDashboardStore } from '@/stores/dashboardStore'
 import { useAuthStore } from '@/stores/authStore'
 import { useDashboard } from '@/hooks/useDashboard'
-import { LazyLineChart, LazyPieChart, LazyBarChart, LazyAreaChart, LazyChart } from '@/components/charts'
+import { LazyLineChart, LazyPieChart, LazyChart } from '@/components/charts'
 import { Header } from '@/components/Layout'
 import { ExportButton } from '@/components/Export'
 import EmailVerificationBanner from '@/components/Auth/EmailVerificationBanner'
@@ -19,17 +19,20 @@ const DashboardComponent = () => {
     accountsPayable,
     lineChartData,
     pieChartData,
-    isKPIsLoading,
-    isTransactionsLoading,
-    isAccountsPayableLoading,
-    isLineChartLoading,
-    isPieChartLoading,
-    kpisError,
-    transactionsError,
-    accountsPayableError,
-    lineChartError,
-    pieChartError,
-    refreshDashboard
+    loading: {
+      kpis: isKPIsLoading,
+      transactions: isTransactionsLoading,
+      accountsPayable: isAccountsPayableLoading,
+      lineChart: isLineChartLoading,
+      pieChart: isPieChartLoading,
+    },
+    errors: {
+      kpis: kpisError,
+      transactions: transactionsError,
+      accountsPayable: accountsPayableError,
+      lineChart: lineChartError,
+      pieChart: pieChartError,
+    },
   } = useDashboard()
 
   // Memoizar handlers para evitar recriação desnecessária
@@ -52,17 +55,34 @@ const DashboardComponent = () => {
   );
 
   // Memoizar dados para exportação
-  const exportData = useMemo(() => ({
-    kpis: kpis?.[0] || {},
-    transactions: transactions || [],
-    accountsPayable: accountsPayable || [],
-    period: filters.period || 'month',
-    generatedAt: new Date().toISOString(),
-    charts: {
-      lineChart: lineChartData || {},
-      pieChart: pieChartData || {}
-    }
-  }), [kpis, transactions, accountsPayable, lineChartData, pieChartData, filters.period]);
+  const exportData = useMemo(() => {
+    // Converter array de KPIs para objeto se necessário
+    const kpisObject = Array.isArray(kpis) ? {
+      currentBalance: kpis.find(k => k.title === 'Saldo Atual')?.value || 0,
+      totalIncome: kpis.find(k => k.title === 'Total de Entradas')?.value || 0,
+      totalExpenses: kpis.find(k => k.title === 'Total de Saídas')?.value || 0,
+      accountsPayable: kpis.find(k => k.title === 'Contas a Pagar')?.value || 0,
+      overdueAccounts: kpis.find(k => k.title === 'Contas Vencidas')?.value || 0,
+      netProfit: kpis.find(k => k.title === 'Lucro Líquido')?.value || 0,
+      totalRevenue: kpis.find(k => k.title === 'Receita Total')?.value || 0,
+    } : kpis || {
+      currentBalance: 0,
+      totalIncome: 0,
+      totalExpenses: 0,
+      accountsPayable: 0,
+      overdueAccounts: 0,
+      netProfit: 0,
+      totalRevenue: 0,
+    };
+
+    return {
+      kpis: kpisObject,
+      transactions: transactions || [],
+      accountsPayable: accountsPayable || [],
+      period: 'Último mês',
+      generatedAt: new Date().toLocaleString('pt-BR')
+    };
+  }, [kpis, transactions, accountsPayable]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -179,7 +199,7 @@ const DashboardComponent = () => {
                   ) : kpisError ? (
                     <span className="text-red-500">Erro</span>
                   ) : (
-                    `R$ ${(kpis?.[0]?.currentBalance || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                    `R$ ${((kpis as any)?.currentBalance || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                   )}
                 </p>
               </div>
@@ -199,7 +219,7 @@ const DashboardComponent = () => {
                   ) : kpisError ? (
                     <span className="text-red-500">Erro</span>
                   ) : (
-                    `R$ ${(kpis?.[0]?.totalIncome || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                    `R$ ${((kpis as any)?.totalIncome || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                   )}
                 </p>
               </div>
@@ -219,7 +239,7 @@ const DashboardComponent = () => {
                   ) : kpisError ? (
                     <span className="text-red-500">Erro</span>
                   ) : (
-                    `R$ ${(kpis?.[0]?.totalExpenses || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                    `R$ ${((kpis as any)?.totalExpenses || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                   )}
                 </p>
               </div>
@@ -239,7 +259,7 @@ const DashboardComponent = () => {
                   ) : kpisError ? (
                     <span className="text-red-500">Erro</span>
                   ) : (
-                    `R$ ${(kpis?.[0]?.accountsPayable || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                    `R$ ${((kpis as any)?.accountsPayable || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                   )}
                 </p>
               </div>
@@ -259,7 +279,7 @@ const DashboardComponent = () => {
                   ) : kpisError ? (
                     <span className="text-red-500">Erro</span>
                   ) : (
-                    `R$ ${(kpis?.[0]?.overdueAccounts || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
+                    `R$ ${((kpis as any)?.overdueAccounts || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`
                   )}
                 </p>
               </div>
@@ -292,7 +312,16 @@ const DashboardComponent = () => {
                 </div>
               ) : (
                 <LazyLineChart 
-                  data={lineChartData}
+                  data={(lineChartData as any) || { 
+                    labels: [], 
+                    datasets: [{
+                      label: 'Dados',
+                      data: [],
+                      borderColor: '#3B82F6',
+                      backgroundColor: '#3B82F6',
+                      tension: 0.1
+                    }]
+                  }}
                   height={300}
                 />
               )}
@@ -314,7 +343,16 @@ const DashboardComponent = () => {
                 </div>
               ) : (
                 <LazyPieChart 
-                  data={pieChartData}
+                  data={(pieChartData as any) || { 
+                    labels: [], 
+                    datasets: [{
+                      label: 'Dados',
+                      data: [],
+                      backgroundColor: ['#3B82F6', '#EF4444', '#10B981', '#F59E0B'],
+                      borderColor: ['#3B82F6', '#EF4444', '#10B981', '#F59E0B'],
+                      borderWidth: 1
+                    }]
+                  }}
                   height={300}
                 />
               )}

@@ -395,15 +395,7 @@ class GoogleSheetsService {
     }
   }
 
-  /**
-   * Manipula o sucesso da autenticação
-   */
-  private handleAuthSuccess(): void {
-    this.authState.isSignedIn = true;
-    
-    // Aqui você pode obter informações do usuário se necessário
-    // Por exemplo, usando a People API ou Profile API
-  }
+
 }
 
 // Exporta uma instância singleton

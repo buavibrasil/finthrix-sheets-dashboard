@@ -1,10 +1,89 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePerformanceMonitor } from '@/hooks/usePerformanceMonitor';
 import { Activity, ChevronDown, ChevronUp } from 'lucide-react';
 
+interface PerformanceMetrics {
+  loadTime: number;
+  renderTime: number;
+  memoryUsage: number;
+  bundleSize: number;
+  chunkCount: number;
+}
+
+type PerformanceGrade = 'excellent' | 'good' | 'fair' | 'poor';
+
 export const PerformanceDebug: React.FC = () => {
-  const { metrics, isLoading, grade, suggestions } = usePerformanceMonitor();
+  const { getComponentMetrics, collector } = usePerformanceMonitor('PerformanceDebug');
   const [isExpanded, setIsExpanded] = useState(false);
+  const [metrics, setMetrics] = useState<PerformanceMetrics>({
+    loadTime: 0,
+    renderTime: 0,
+    memoryUsage: 0,
+    bundleSize: 0,
+    chunkCount: 0
+  });
+  const [grade, setGrade] = useState<PerformanceGrade>('good');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Simular coleta de métricas de performance
+    const collectMetrics = () => {
+      const allMetrics = collector.getMetrics();
+      const avgLoadTime = allMetrics.length > 0 
+        ? allMetrics.reduce((sum, m) => sum + m.duration, 0) / allMetrics.length 
+        : 0;
+
+      // Simular outras métricas
+      const newMetrics: PerformanceMetrics = {
+        loadTime: Math.round(avgLoadTime),
+        renderTime: Math.round(performance.now() % 100),
+        memoryUsage: Math.round((performance as any).memory?.usedJSHeapSize / 1024 / 1024 || 0),
+        bundleSize: 250, // Valor simulado
+        chunkCount: 3 // Valor simulado
+      };
+
+      setMetrics(newMetrics);
+
+      // Calcular grade baseada nas métricas
+      const calculateGrade = (metrics: PerformanceMetrics): PerformanceGrade => {
+        const score = 
+          (metrics.loadTime < 100 ? 25 : metrics.loadTime < 300 ? 15 : metrics.loadTime < 500 ? 10 : 0) +
+          (metrics.renderTime < 50 ? 25 : metrics.renderTime < 100 ? 15 : metrics.renderTime < 200 ? 10 : 0) +
+          (metrics.memoryUsage < 50 ? 25 : metrics.memoryUsage < 100 ? 15 : metrics.memoryUsage < 200 ? 10 : 0) +
+          (metrics.bundleSize < 200 ? 25 : metrics.bundleSize < 500 ? 15 : metrics.bundleSize < 1000 ? 10 : 0);
+
+        if (score >= 80) return 'excellent';
+        if (score >= 60) return 'good';
+        if (score >= 40) return 'fair';
+        return 'poor';
+      };
+
+      const newGrade = calculateGrade(newMetrics);
+      setGrade(newGrade);
+
+      // Gerar sugestões baseadas nas métricas
+      const newSuggestions: string[] = [];
+      if (newMetrics.loadTime > 300) {
+        newSuggestions.push('Considere otimizar o tempo de carregamento');
+      }
+      if (newMetrics.renderTime > 100) {
+        newSuggestions.push('Renderização pode ser otimizada');
+      }
+      if (newMetrics.memoryUsage > 100) {
+        newSuggestions.push('Alto uso de memória detectado');
+      }
+      if (newMetrics.bundleSize > 500) {
+        newSuggestions.push('Bundle muito grande, considere code splitting');
+      }
+
+      setSuggestions(newSuggestions);
+    };
+
+    collectMetrics();
+    const interval = setInterval(collectMetrics, 5000); // Atualizar a cada 5 segundos
+
+    return () => clearInterval(interval);
+  }, [collector]);
 
   // Só mostrar em desenvolvimento
   if (import.meta.env.PROD) {
@@ -24,17 +103,6 @@ export const PerformanceDebug: React.FC = () => {
     fair: 'Regular',
     poor: 'Ruim'
   };
-
-  if (isLoading) {
-    return (
-      <div className="fixed bottom-4 right-4 bg-white border border-gray-200 rounded-lg p-3 shadow-lg z-50">
-        <div className="flex items-center space-x-2">
-          <Activity className="h-4 w-4 animate-pulse" />
-          <span className="text-sm">Medindo performance...</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed bottom-4 right-4 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-w-sm">
